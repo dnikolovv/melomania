@@ -1,36 +1,55 @@
-﻿using Google.Apis.Auth.OAuth2;
-using Google.Apis.Drive.v3;
-using System.IO;
+﻿using Google.Apis.Drive.v3;
+using Google.Apis.Drive.v3.Data;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Melomania.Drive
 {
     public class GoogleDriveService
     {
-        private static string[] Scopes = { DriveService.Scope.Drive };
-        private static string ApplicationName = "Melomania";
+        public GoogleDriveService(DriveService driveService)
+        {
+            _driveService = driveService;
+        }
 
         private readonly DriveService _driveService;
 
-        public UserCredential Authorize(string credentialsPath)
+        public async Task<IList<File>> GetFilesAsync(int pageSize = 100, string parentFolder = null)
         {
-            if (!File.Exists(credentialsPath))
+            var listRequest = _driveService.Files.List();
+
+            listRequest.PageSize = pageSize;
+            listRequest.Fields = "nextPageToken, files(fileExtension,id,name,size,webContentLink,webViewLink,mimeType,parents)";
+
+            if (!string.IsNullOrEmpty(parentFolder))
             {
-                throw new FileNotFoundException("Please provide a valid path to your credentials.json file (see https://developers.google.com/drive/api/v3/quickstart/dotnet for help).");
+                var folderId = await GetFolderIdAsync(parentFolder);
+                listRequest.Q = $"'{folderId}' in parents";
             }
 
-            using (var stream = new FileStream(credentialsPath, FileMode.Open, FileAccess.Read))
+            var files = (await listRequest.ExecuteAsync()).Files;
+
+            return files;
+        }
+
+        private async Task<string> GetFolderIdAsync(string folderName)
+        {
+            var folderInfoRequest = _driveService.Files.List();
+
+            folderInfoRequest.Q = $"mimeType = 'application/vnd.google-apps.folder' and name = '{folderName}'";
+            folderInfoRequest.Fields = "files(contentHints/thumbnail,fileExtension,iconLink,id,name,size,thumbnailLink,webContentLink,webViewLink,mimeType,parents)";
+
+            var results = (await folderInfoRequest.ExecuteAsync()).Files;
+
+            if (results.Count > 1)
             {
-                // The file token.json stores the user's access and refresh tokens, and is created
-                // automatically when the authorization flow completes for the first time.
-                string credPath = "token.json";
-                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    GoogleClientSecrets.Load(stream).Secrets,
-                    Scopes,
-                    "user",
-                    CancellationToken.None,
-                    new FileDataStore(credPath, true)).Result;
-                Console.WriteLine("Credential file saved to: " + credPath);
+                throw new InvalidOperationException($"Multiple folders with the name {folderName} were found. " +
+                    $"Please make sure that your music collection resides in one folder with unique name.");
             }
+
+            return results.Single().Id;
         }
     }
 }
