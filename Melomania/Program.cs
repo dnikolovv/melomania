@@ -13,7 +13,7 @@ namespace Melomania
 
             var collection = new GoogleDriveMusicCollection(driveService, "/Music");
 
-            var tracks = collection.GetTracksAsync(path: "Disk 1 Stamba").Result;
+            var tracks = collection.GetTracksAsync(relativePath: "Disk 1 Stamba").Result;
 
             var groupedByFolders = tracks.GroupBy(x => x.Type);
 

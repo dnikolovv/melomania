@@ -1,5 +1,7 @@
 ﻿using Melomania.Music;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -11,17 +13,25 @@ namespace Melomania.GoogleDrive
 
         public GoogleDriveMusicCollection(GoogleDriveService googleDriveService, string baseCollectionFolder)
         {
-            _googleDriveService = googleDriveService;
-            _baseCollectionFolder = baseCollectionFolder;
+            _googleDriveService = googleDriveService ?? throw new ArgumentNullException(nameof(googleDriveService));
+            _baseCollectionFolder = baseCollectionFolder ?? throw new ArgumentNullException(nameof(baseCollectionFolder));
         }
 
         private readonly GoogleDriveService _googleDriveService;
         private readonly string _baseCollectionFolder;
 
-        public async Task<IEnumerable<MusicCollectionEntry>> GetTracksAsync(int pageSize = 100, string path = null)
+        /// <summary>
+        /// Retrieves a list of tracks from a music collection.
+        /// </summary>
+        /// <param name="pageSize">The page size.</param>
+        /// <param name="relativePath">A path relative to the collection root path.</param>
+        /// <returns>A collection of music entries.</returns>
+        public async Task<IEnumerable<MusicCollectionEntry>> GetTracksAsync(int pageSize = 100, string relativePath = null)
         {
+            var fullPath = GenerateFullPath(relativePath);
+
             var collectionItems = await _googleDriveService
-                .GetFilesAsync(pageSize: pageSize, path: _baseCollectionFolder);
+                .GetFilesAsync(pageSize: pageSize, path: fullPath);
 
             return collectionItems
                 .Select(i => new MusicCollectionEntry
@@ -37,6 +47,16 @@ namespace Melomania.GoogleDrive
         public Task<UploadTrackResult> UploadTrack(Track track, string folder)
         {
             throw new System.NotImplementedException();
+        }
+
+        private string GenerateFullPath(string relativePath)
+        {
+            if (string.IsNullOrEmpty(relativePath))
+            {
+                return _baseCollectionFolder;
+            }
+
+            return Path.Combine(_baseCollectionFolder, relativePath);
         }
     }
 }

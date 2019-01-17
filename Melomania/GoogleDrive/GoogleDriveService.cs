@@ -29,7 +29,8 @@ namespace Melomania.GoogleDrive
             var listRequest = _driveService.Files.List();
 
             listRequest.PageSize = pageSize;
-            listRequest.Fields = "nextPageToken, files(fileExtension,id,name,size,webContentLink,webViewLink,mimeType,parents,properties,videoMediaMetadata,appProperties)";
+            listRequest.Fields = "nextPageToken, files(fileExtension,id,name,size,webContentLink,webViewLink,mimeType,parents,properties,videoMediaMetadata,appProperties,trashed,explicitlyTrashed)";
+            listRequest.Q = "trashed = false";
 
             if (!string.IsNullOrEmpty(path))
             {
@@ -37,7 +38,7 @@ namespace Melomania.GoogleDrive
                 
                 // TODO: Decide whether to create a new folder if the path doesn't exist or return an error.
                 folderId.MatchSome(id =>
-                    listRequest.Q = $"'{id}' in parents");
+                    listRequest.Q += $" and '{id}' in parents");
             }
 
             var files = (await listRequest.ExecuteAsync()).Files;
@@ -45,28 +46,41 @@ namespace Melomania.GoogleDrive
             return files;
         }
 
-        //public async Task<Option<File>> UploadFile(System.IO.FileStream fileContents, string fileName, string parentFolder, string fileType)
-        //{
-        //    var parentFolderId = await GetFolderIdFromPathAsync(parentFolder);
+        /// <summary>
+        /// Uploads a file to a given path.
+        /// </summary>
+        /// <param name="fileContents">The file contents.</param>
+        /// <param name="fileName">The file name (including extension).</param>
+        /// <param name="fileType">The file content type.</param>
+        /// <param name="path">The path to upload the file to.</param>
+        /// <returns>Either the uploaded file or an error.</returns>
+        public Task<Option<File, Error>> UploadFile(System.IO.FileStream fileContents, string fileName, GoogleDriveFileContentType fileType, string path)
+        {
+            // TODO: Decide whether to create a new folder if the provided doesn't exist
+            return GetFolderIdFromPathAsync(path).MapAsync(async parentFolderId =>
+            {
+                var fileMetadata = new File()
+                {
+                    Name = fileName,
+                    Parents = new[] { parentFolderId }
+                };
 
-        //    var fileMetadata = new File()
-        //    {
-        //        Name = fileName,
-        //        Parents = new[] { parentFolderId }
-        //    };
+                var uploadRequest = _driveService
+                    .Files
+                    .Create(fileMetadata, fileContents, fileType.ToString());
 
-        //    var uploadRequest = _driveService.Files.Create(fileMetadata, fileContents, fileType);
+                // Return the id and name fields when finished uploading
+                uploadRequest.Fields = "id,name";
 
-        //    // Return the id and name fields when finished uploading
-        //    uploadRequest.Fields = "id,name";
+                // TODO: Catch exceptions
+                // TODO: Enable subcribing to progress changes
+                await uploadRequest.UploadAsync();
 
-        //    await uploadRequest.UploadAsync();
+                var uploadedFile = uploadRequest.ResponseBody;
 
-        //    var uploadedFile = uploadRequest.ResponseBody;
-
-        //    return uploadedFile;
-        //}
-
+                return uploadedFile;
+            });
+        }
 
         /// <summary>
         /// Gets the deepest folder in a path's id. (e.g. \Root\Subfolder1\Subfolder2 will return "Subfolder2"'s id).
