@@ -1,4 +1,4 @@
-﻿namespace Melomania
+﻿namespace Melomania.Music
 {
     public enum MusicCollectionEntryType
     {

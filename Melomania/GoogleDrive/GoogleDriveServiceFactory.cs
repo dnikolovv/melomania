@@ -6,9 +6,9 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Melomania.Drive
+namespace Melomania.GoogleDrive
 {
-    public class DriveServiceFactory
+    public class GoogleDriveServiceFactory
     {
         public async Task<GoogleDriveService> GetDriveService(string apiSecretsPath)
         {

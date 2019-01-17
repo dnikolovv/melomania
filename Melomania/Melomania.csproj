@@ -6,13 +6,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.4.3" />
     <PackageReference Include="Google.Apis.Drive.v3" Version="1.37.0.1466" />
+    <PackageReference Include="Optional" Version="4.0.0" />
+    <PackageReference Include="Optional.Async" Version="1.1.0" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="credentials.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="CLI\" />
   </ItemGroup>
 
 </Project>

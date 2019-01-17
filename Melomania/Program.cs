@@ -1,4 +1,4 @@
-﻿using Melomania.Drive;
+﻿using Melomania.GoogleDrive;
 using System;
 using System.Linq;
 
@@ -8,14 +8,14 @@ namespace Melomania
     {
         public static void Main(string[] args)
         {
-            var driveService = new DriveServiceFactory()
+            var driveService = new GoogleDriveServiceFactory()
                 .GetDriveService("credentials.json").Result;
 
-            var store = new GoogleDriveMusicCollection(driveService);
+            var collection = new GoogleDriveMusicCollection(driveService, "/Music");
 
-            var test = store.GetTracksAsync(1000).Result;
+            var tracks = collection.GetTracksAsync(path: "Disk 1 Stamba").Result;
 
-            var groupedByFolders = test.GroupBy(x => x.Type);
+            var groupedByFolders = tracks.GroupBy(x => x.Type);
 
             foreach (var group in groupedByFolders)
             {
