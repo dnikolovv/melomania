@@ -4,7 +4,7 @@ namespace Melomania.GoogleDrive
 {
     public enum GoogleDriveFileContentType
     {
-        [Description("application/vnd.google-apps.audio")]
+        [Description("audio/mpeg")]
         Audio
     }
 }

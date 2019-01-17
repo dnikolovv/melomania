@@ -23,7 +23,15 @@ namespace Melomania.GoogleDrive
 
                 var credentials = await GoogleWebAuthorizationBroker.AuthorizeAsync(
                     GoogleClientSecrets.Load(stream).Secrets,
-                    new[] { DriveService.Scope.Drive },
+                    new[]
+                    {
+                        DriveService.Scope.Drive,
+                        DriveService.Scope.DriveAppdata,
+                        DriveService.Scope.DriveFile,
+                        DriveService.Scope.DriveMetadataReadonly,
+                        DriveService.Scope.DriveReadonly,
+                        DriveService.Scope.DriveScripts
+                    },
                     "user",
                     CancellationToken.None,
                     new FileDataStore(tokenSavePath, true));

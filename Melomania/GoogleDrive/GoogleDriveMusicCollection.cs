@@ -1,4 +1,6 @@
 ﻿using Melomania.Music;
+using Optional;
+using Optional.Async;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -44,9 +46,15 @@ namespace Melomania.GoogleDrive
                 });
         }
 
-        public Task<UploadTrackResult> UploadTrack(Track track, string folder)
+        public Task<Option<MusicCollectionEntry, Error>> UploadTrack(Track track, string relativePath)
         {
-            throw new System.NotImplementedException();
+            // TODO: Make pretty
+            return _googleDriveService.UploadFile(track.Contents, track.Name, GoogleDriveFileContentType.Audio, GenerateFullPath(relativePath)).MapAsync(async file =>
+            new MusicCollectionEntry
+            {
+                Name = file.Name,
+                Type = MusicCollectionEntryType.Track
+            });
         }
 
         private string GenerateFullPath(string relativePath)

@@ -54,7 +54,7 @@ namespace Melomania.GoogleDrive
         /// <param name="fileType">The file content type.</param>
         /// <param name="path">The path to upload the file to.</param>
         /// <returns>Either the uploaded file or an error.</returns>
-        public Task<Option<File, Error>> UploadFile(System.IO.FileStream fileContents, string fileName, GoogleDriveFileContentType fileType, string path)
+        public Task<Option<File, Error>> UploadFile(System.IO.Stream fileContents, string fileName, GoogleDriveFileContentType fileType, string path)
         {
             // TODO: Decide whether to create a new folder if the provided doesn't exist
             return GetFolderIdFromPathAsync(path).MapAsync(async parentFolderId =>
@@ -62,19 +62,20 @@ namespace Melomania.GoogleDrive
                 var fileMetadata = new File()
                 {
                     Name = fileName,
-                    Parents = new[] { parentFolderId }
+                    Parents = new[] { parentFolderId },
+                    MimeType = fileType.GetDescription()
                 };
 
                 var uploadRequest = _driveService
                     .Files
-                    .Create(fileMetadata, fileContents, fileType.ToString());
+                    .Create(fileMetadata, fileContents, fileMetadata.MimeType);
 
                 // Return the id and name fields when finished uploading
                 uploadRequest.Fields = "id,name";
 
                 // TODO: Catch exceptions
                 // TODO: Enable subcribing to progress changes
-                await uploadRequest.UploadAsync();
+                var result = await uploadRequest.UploadAsync();
 
                 var uploadedFile = uploadRequest.ResponseBody;
 
@@ -186,6 +187,8 @@ namespace Melomania.GoogleDrive
         /// <returns>The split path or nothing.</returns>
         private Option<string[], Error> SplitPath(string path) =>
             path.SomeNotNull<string, Error>($"The path must not be null.")
-                .Map(p => p.Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries));
+                .Map(p => p.Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries))
+                // Take care of double slashes
+                .Map(ps => ps.Select(p => p.Trim(new [] { '/', '\\' })).ToArray());
     }
 }

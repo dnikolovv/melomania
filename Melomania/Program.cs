@@ -1,5 +1,7 @@
 ﻿using Melomania.GoogleDrive;
+using Melomania.Music;
 using System;
+using System.IO;
 using System.Linq;
 
 namespace Melomania
@@ -13,6 +15,20 @@ namespace Melomania
 
             var collection = new GoogleDriveMusicCollection(driveService, "/Music");
 
+            //TestTrackListing(collection);
+            using (var trackStream = File.OpenRead("Matyo Dobrev Ferus Mustafov Project Band 2.mp3"))
+            {
+                var fileToUpload = new Track { Contents = trackStream, Name = "Matyo Dobrev Ferus Mustafov Project Band 2.mp3" };
+
+                var result = collection.UploadTrack(fileToUpload, "Disk 1 Stamba").Result;
+            }
+
+
+            Console.Read();
+        }
+
+        private static void TestTrackListing(GoogleDriveMusicCollection collection)
+        {
             var tracks = collection.GetTracksAsync(relativePath: "Disk 1 Stamba").Result;
 
             var groupedByFolders = tracks.GroupBy(x => x.Type);
@@ -30,8 +46,6 @@ namespace Melomania
                 Console.WriteLine("------------");
 
             }
-
-            Console.Read();
         }
     }
 }

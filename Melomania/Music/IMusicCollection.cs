@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Optional;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Melomania.Music
@@ -6,7 +7,7 @@ namespace Melomania.Music
     public interface IMusicCollection
     {
         Task<IEnumerable<MusicCollectionEntry>> GetTracksAsync(int pageSize, string path);
-        
-        Task<UploadTrackResult> UploadTrack(Track track, string path);
+
+        Task<Option<MusicCollectionEntry, Error>> UploadTrack(Track track, string path);
     }
 }
