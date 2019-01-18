@@ -16,9 +16,27 @@ namespace Melomania
             var collection = new GoogleDriveMusicCollection(driveService, "/Music");
 
             //TestTrackListing(collection);
-            using (var trackStream = File.OpenRead("Matyo Dobrev Ferus Mustafov Project Band 2.mp3"))
+            using (var trackStream = File.OpenRead("Improvisation 5.mp3"))
             {
-                var fileToUpload = new Track { Contents = trackStream, Name = "Matyo Dobrev Ferus Mustafov Project Band 2.mp3" };
+                var fileToUpload = new Track { Contents = trackStream, Name = "Improvisation 5TEST3.mp3" };
+
+                Console.WriteLine("Uploading file:");
+
+                Console.WriteLine();
+                Console.Write("Progress: [");
+
+                driveService.UploadProgressChanged += progress =>
+                {
+                    var percentageComplete = (progress.BytesSent / (double)trackStream.Length) * 100;
+
+                    Console.Write(new string('-', (int)Math.Round(percentageComplete / 50)));
+
+                    if (progress.Status == Google.Apis.Upload.UploadStatus.Completed)
+                    {
+                        Console.Write("]");
+                    }
+                };
+
 
                 var result = collection.UploadTrack(fileToUpload, "Disk 1 Stamba").Result;
             }

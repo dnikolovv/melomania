@@ -1,5 +1,6 @@
 ﻿using Google.Apis.Drive.v3;
 using Google.Apis.Drive.v3.Data;
+using Google.Apis.Upload;
 using Optional;
 using Optional.Async;
 using System;
@@ -15,6 +16,8 @@ namespace Melomania.GoogleDrive
         {
             _driveService = driveService;
         }
+
+        public event Action<IUploadProgress> UploadProgressChanged;
 
         private readonly DriveService _driveService;
 
@@ -72,6 +75,8 @@ namespace Melomania.GoogleDrive
 
                 // Return the id and name fields when finished uploading
                 uploadRequest.Fields = "id,name";
+                uploadRequest.ChunkSize = ResumableUpload.MinimumChunkSize;
+                uploadRequest.ProgressChanged += UploadProgressChanged;
 
                 // TODO: Catch exceptions
                 // TODO: Enable subcribing to progress changes

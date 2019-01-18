@@ -16,6 +16,9 @@
     <None Update="credentials.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Improvisation 5.mp3">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Matyo Dobrev Ferus Mustafov Project Band 2.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
