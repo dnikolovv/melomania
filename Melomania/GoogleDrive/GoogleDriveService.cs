@@ -17,7 +17,10 @@ namespace Melomania.GoogleDrive
             _driveService = driveService;
         }
 
-        public event Action<IUploadProgress> UploadProgressChanged;
+        public event Action<UploadStarting> OnUploadStarting;
+        public event Action<UploadProgress> OnUploadProgressChanged;
+        public event Action<UploadSuccessResult> OnUploadSuccessfull;
+        public event Action<UploadFailureResult> OnUploadFailure;
 
         private readonly DriveService _driveService;
 
@@ -76,10 +79,30 @@ namespace Melomania.GoogleDrive
                 // Return the id and name fields when finished uploading
                 uploadRequest.Fields = "id,name";
                 uploadRequest.ChunkSize = ResumableUpload.MinimumChunkSize;
-                uploadRequest.ProgressChanged += UploadProgressChanged;
 
-                // TODO: Catch exceptions
-                // TODO: Enable subcribing to progress changes
+                uploadRequest.ProgressChanged += progress =>
+                {
+                    switch (progress.Status)
+                    {
+                        case UploadStatus.NotStarted:
+                            break;
+                        case UploadStatus.Starting:
+                            OnUploadStarting(new UploadStarting { FileName = fileName, Path = path, FileSizeInBytes = fileContents.Length });
+                            break;
+                        case UploadStatus.Uploading:
+                            OnUploadProgressChanged(new UploadProgress { BytesSent = progress.BytesSent, TotalBytesToSend = fileContents.Length });
+                            break;
+                        case UploadStatus.Completed:
+                            OnUploadSuccessfull(new UploadSuccessResult { FileName = fileName, Path = path });
+                            break;
+                        case UploadStatus.Failed:
+                            OnUploadFailure(new UploadFailureResult { FileName = fileName, Path = path, Exception = progress.Exception });
+                            break;
+                        default:
+                            break;
+                    }
+                };
+
                 var result = await uploadRequest.UploadAsync();
 
                 var uploadedFile = uploadRequest.ResponseBody;

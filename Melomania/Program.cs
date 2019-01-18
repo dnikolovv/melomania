@@ -22,19 +22,20 @@ namespace Melomania
 
                 Console.WriteLine("Uploading file:");
 
-                Console.WriteLine();
-                Console.Write("Progress: [");
-
-                driveService.UploadProgressChanged += progress =>
+                driveService.OnUploadStarting += _ =>
                 {
-                    var percentageComplete = (progress.BytesSent / (double)trackStream.Length) * 100;
+                    Console.WriteLine();
+                    Console.Write("Progress: [");
+                };
 
-                    Console.Write(new string('-', (int)Math.Round(percentageComplete / 50)));
+                driveService.OnUploadProgressChanged += progress =>
+                {
+                    Console.Write(new string('-', (int)Math.Round(progress.Percentage / 50)));
+                };
 
-                    if (progress.Status == Google.Apis.Upload.UploadStatus.Completed)
-                    {
-                        Console.Write("]");
-                    }
+                driveService.OnUploadSuccessfull += _ =>
+                {
+                    Console.Write("]");
                 };
 
 
