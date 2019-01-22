@@ -177,9 +177,9 @@ namespace Melomania.GoogleDrive
                 var results = (await folderInfoRequest.ExecuteAsync()).Files;
 
                 return results
-                    .SomeWhen<IList<File>, Error>(
-                        rs => rs?.Count == 1,
-                        $"Multiple folders with the name {folderName} with parents {parentsQuery} were found when one was expected.")
+                    .Some<IList<File>, Error>()
+                    .Filter(rs => rs?.Count > 0, $"No folders with the name {folderName} were found.")
+                    .Filter(rs => rs?.Count == 1, $"Multiple folders with the name {folderName} were found when one was expected.")
                     .Map(rs => rs.Single().Id);
             }
             // TODO: Research the exact exception that Google throws when the file is not found.

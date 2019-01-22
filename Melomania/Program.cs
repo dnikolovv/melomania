@@ -18,7 +18,7 @@ namespace Melomania
         {
             Console.CursorVisible = false;
 
-            args = new[] { "upload", "path", "Improvisation 5.mp3", "." };
+            args = new[] { "upload", "path", "Improvisation 5.mp3", "asdfasdf/asdfasdf" };
 
             var configuration = new Configuration();
 
@@ -64,8 +64,8 @@ namespace Melomania
 
         private static async Task UploadFromPath(string[] args, Configuration configuration)
         {
-            var path = args[2];
-            var pathInsideCollection = args[3];
+            var filePath = args[2];
+            var destinationFolder = args[3];
 
             var driveMusicCollection = await GetDriveMusicCollection(configuration);
 
@@ -76,9 +76,9 @@ namespace Melomania
 
             var result = await command.ExecuteAsync(new UploadFromPathArguments
             {
-                FilePath = path,
-                FileName = Path.GetFileName(path),
-                PathInCollection = pathInsideCollection
+                FilePath = filePath,
+                FileName = Path.GetFileName(filePath),
+                DestinationInCollection = destinationFolder
             });
 
             result.Match(
@@ -133,55 +133,5 @@ namespace Melomania
                 return collection;
             }
         }
-
-        //private static void TestTrackUpload(GoogleDriveService driveService, GoogleDriveMusicCollection collection)
-        //{
-        //    using (var trackStream = File.OpenRead("Improvisation 5.mp3"))
-        //    {
-        //        var fileToUpload = new Track { Contents = trackStream, Name = "Improvisation 5TEST3.mp3" };
-
-        //        _logger.WriteLine("Uploading file:");
-
-        //        driveService.OnUploadStarting += _ =>
-        //        {
-        //            _logger.WriteLine();
-        //            _logger.Write("Progress: [");
-        //        };
-
-        //        driveService.OnUploadProgressChanged += progress =>
-        //        {
-        //            Console.Write(new string('-', (int)Math.Round(progress.Percentage / 50)));
-        //        };
-
-        //        driveService.OnUploadSuccessfull += _ =>
-        //        {
-        //            Console.Write("]");
-        //        };
-
-
-        //        var result = collection.UploadTrack(fileToUpload, "Disk 1 Stamba").Result;
-        //    }
-        //}
-
-        //private static void TestTrackListing(GoogleDriveMusicCollection collection)
-        //{
-        //    var tracks = collection.GetTracksAsync(relativePath: "Disk 1 Stamba").Result;
-
-        //    var groupedByFolders = tracks.GroupBy(x => x.Type);
-
-        //    foreach (var group in groupedByFolders)
-        //    {
-        //        Console.WriteLine($"{group.Key}s:");
-        //        Console.WriteLine();
-
-        //        foreach (var groupEntry in group)
-        //        {
-        //            Console.WriteLine($"Name: {groupEntry.Name}");
-        //        }
-
-        //        Console.WriteLine("------------");
-
-        //    }
-        //}
     }
 }

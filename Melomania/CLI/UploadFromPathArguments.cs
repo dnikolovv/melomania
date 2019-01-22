@@ -6,6 +6,6 @@
 
         public string FileName { get; set; }
 
-        public string PathInCollection { get; set; }
+        public string DestinationInCollection { get; set; }
     }
 }
