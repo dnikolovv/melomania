@@ -87,16 +87,16 @@ namespace Melomania.GoogleDrive
                         case UploadStatus.NotStarted:
                             break;
                         case UploadStatus.Starting:
-                            OnUploadStarting(new UploadStarting { FileName = fileName, Path = path, FileSizeInBytes = fileContents.Length });
+                            OnUploadStarting?.Invoke(new UploadStarting { FileName = fileName, Path = path, FileSizeInBytes = fileContents.Length });
                             break;
                         case UploadStatus.Uploading:
-                            OnUploadProgressChanged(new UploadProgress { BytesSent = progress.BytesSent, TotalBytesToSend = fileContents.Length });
+                            OnUploadProgressChanged?.Invoke(new UploadProgress { BytesSent = progress.BytesSent, TotalBytesToSend = fileContents.Length });
                             break;
                         case UploadStatus.Completed:
-                            OnUploadSuccessfull(new UploadSuccessResult { FileName = fileName, Path = path });
+                            OnUploadSuccessfull?.Invoke(new UploadSuccessResult { FileName = fileName, Path = path });
                             break;
                         case UploadStatus.Failed:
-                            OnUploadFailure(new UploadFailureResult { FileName = fileName, Path = path, Exception = progress.Exception });
+                            OnUploadFailure?.Invoke(new UploadFailureResult { FileName = fileName, Path = path, Exception = progress.Exception });
                             break;
                         default:
                             break;
@@ -216,7 +216,7 @@ namespace Melomania.GoogleDrive
         private Option<string[], Error> SplitPath(string path) =>
             path.SomeNotNull<string, Error>($"The path must not be null.")
                 .Map(p => p.Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries))
-                // Take care of double slashes
+                // Take care of multiple slashes between paths (e.g. ///Music///Disco
                 .Map(ps => ps.Select(p => p.Trim(new [] { '/', '\\' })).ToArray());
     }
 }

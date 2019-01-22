@@ -22,6 +22,30 @@ namespace Melomania.GoogleDrive
         private readonly GoogleDriveService _googleDriveService;
         private readonly string _baseCollectionFolder;
 
+        public event Action<UploadStarting> OnUploadStarting
+        {
+            add { _googleDriveService.OnUploadStarting += value; }
+            remove { _googleDriveService.OnUploadStarting -= value; }
+        }
+
+        public event Action<UploadProgress> OnUploadProgressChanged
+        {
+            add { _googleDriveService.OnUploadProgressChanged += value; }
+            remove { _googleDriveService.OnUploadProgressChanged -= value; }
+        }
+
+        public event Action<UploadSuccessResult> OnUploadSuccessfull
+        {
+            add { _googleDriveService.OnUploadSuccessfull += value; }
+            remove { _googleDriveService.OnUploadSuccessfull -= value; }
+        }
+
+        public event Action<UploadFailureResult> OnUploadFailure
+        {
+            add { _googleDriveService.OnUploadFailure += value; }
+            remove { _googleDriveService.OnUploadFailure -= value; }
+        }
+
         /// <summary>
         /// Retrieves a list of tracks from a music collection.
         /// </summary>
@@ -63,8 +87,11 @@ namespace Melomania.GoogleDrive
             {
                 return _baseCollectionFolder;
             }
-
-            return Path.Combine(_baseCollectionFolder, relativePath);
+            
+            // We interpret '.' as the base folder
+            return relativePath == "." ?
+                _baseCollectionFolder :
+                Path.Combine(_baseCollectionFolder, relativePath);
         }
     }
 }

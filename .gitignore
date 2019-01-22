@@ -10,6 +10,9 @@
 # Google Drive API credentials file
 credentials.json
 
+# Test .mp3 files
+*.mp3
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 

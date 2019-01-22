@@ -3,10 +3,10 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.4.3" />
     <PackageReference Include="Google.Apis.Drive.v3" Version="1.37.0.1466" />
     <PackageReference Include="Optional" Version="4.0.0" />
     <PackageReference Include="Optional.Async" Version="1.1.0" />
@@ -22,10 +22,6 @@
     <None Update="Matyo Dobrev Ferus Mustafov Project Band 2.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="CLI\" />
   </ItemGroup>
 
 </Project>

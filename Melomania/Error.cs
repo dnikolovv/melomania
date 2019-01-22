@@ -13,7 +13,7 @@ namespace Melomania
 
         public Error(params string[] messages)
         {
-            Messages = messages;
+            Messages = messages ?? throw new ArgumentNullException("Tried to create an Error with a null message.");
             Date = DateTime.Now;
         }
 
@@ -32,5 +32,8 @@ namespace Melomania
 
         public static Error MergeErrors(Error first, Error second) =>
             new Error(first.Messages.Concat(second.Messages));
+
+        public override string ToString() =>
+            string.Join($",{Environment.NewLine}", Messages);
     }
 }
