@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Melomania.CLI
 {
-    public class UploadFromPathCommand : AsyncCommand<UploadFromPathArguments, UploadSuccessResult>
+    public class UploadFromPathCommandHandler : AsyncCommand<UploadFromPathArguments, UploadSuccessResult>
     {
-        public UploadFromPathCommand(IMusicCollection musicCollection, ILogger logger)
+        public UploadFromPathCommandHandler(IMusicCollection musicCollection, ILogger logger)
             : base (logger)
         {
             _musicCollection = musicCollection;

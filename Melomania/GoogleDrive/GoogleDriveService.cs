@@ -87,7 +87,7 @@ namespace Melomania.GoogleDrive
                         case UploadStatus.NotStarted:
                             break;
                         case UploadStatus.Starting:
-                            OnUploadStarting?.Invoke(new UploadStarting { FileName = fileName, Path = path, FileSizeInBytes = fileContents.Length });
+                            OnUploadStarting?.Invoke(new UploadStarting { FileName = fileName, DestinationPath = path, FileSizeInBytes = fileContents.Length });
                             break;
                         case UploadStatus.Uploading:
                             OnUploadProgressChanged?.Invoke(new UploadProgress { BytesSent = progress.BytesSent, TotalBytesToSend = fileContents.Length });
@@ -116,7 +116,7 @@ namespace Melomania.GoogleDrive
         /// </summary>
         /// <param name="folderPath">The folder path.</param>
         /// <returns>The deepest folder in the path's id or an error.</returns>
-        private Task<Option<string, Error>> GetFolderIdFromPathAsync(string folderPath) =>
+        public Task<Option<string, Error>> GetFolderIdFromPathAsync(string folderPath) =>
             SplitPath(folderPath).FlatMapAsync(folderHierarchy =>
             ExtractDeepestFolderId(folderHierarchy));
 
@@ -185,7 +185,6 @@ namespace Melomania.GoogleDrive
             // TODO: Research the exact exception that Google throws when the file is not found.
             catch (Exception e)
             {
-                // TODO: A more descriptive error?
                 return Option.None<string, Error>($"Could not find folder {folderName}.");
             }
         }

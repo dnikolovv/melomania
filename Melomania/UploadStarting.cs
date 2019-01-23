@@ -6,7 +6,7 @@ namespace Melomania
     {
         public string FileName { get; set; }
 
-        public string Path { get; set; }
+        public string DestinationPath { get; set; }
 
         public long FileSizeInBytes { get; set; }
 
