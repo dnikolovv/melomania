@@ -28,9 +28,11 @@ namespace Melomania.CLI
                 .Filter(args => !string.IsNullOrEmpty(args.FileName), "You must provide a non-null file name.")
                 .Filter(args => !string.IsNullOrEmpty(args.DestinationInCollection), $"You must provide a valid path inside your collection (use '.' for root)")
                 .Filter(args => IsValidUrl(args.Url), "Invalid url.").FlatMapAsync(args =>
-                 ExtractTrackFromUrl(args.Url).MapAsync(async stream => new Track { Contents = stream, Name = args.FileName })
+                 ExtractTrackFromUrl(args.Url)
                 .FlatMapAsync(async track =>
                 {
+                    // TODO: The file name from the arguments is ignored
+
                     var uploadResult = await _musicCollection.UploadTrack(track, arguments.DestinationInCollection);
                     
                     return uploadResult.Map(result =>
@@ -41,8 +43,8 @@ namespace Melomania.CLI
                         });
                 }));
 
-        private Task<Option<Stream, Error>> ExtractTrackFromUrl(string url) =>
-            _trackExtractor.ExtractTrackFromUrl(url);
+        private Task<Option<Track, Error>> ExtractTrackFromUrl(string url) =>
+            _trackExtractor.ExtractTrackFromUrl(url, "i-am-testing.mp3");
 
         private static bool IsValidUrl(string url) =>
             Uri.TryCreate(url, UriKind.Absolute, out Uri uriResult) &&

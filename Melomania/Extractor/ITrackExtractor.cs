@@ -1,11 +1,11 @@
-﻿using Optional;
-using System.IO;
+﻿using Melomania.Music;
+using Optional;
 using System.Threading.Tasks;
 
 namespace Melomania.Extractor
 {
     public interface ITrackExtractor
     {
-        Task<Option<Stream, Error>> ExtractTrackFromUrl(string url);
+        Task<Option<Track, Error>> ExtractTrackFromUrl(string url, string fileName);
     }
 }
