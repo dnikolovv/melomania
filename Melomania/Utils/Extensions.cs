@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,6 +8,9 @@ namespace Melomania.Utils
 {
     public static class Extensions
     {
+        public static string SetExtension(this string fileName, string extension) =>
+            $"{Path.GetFileNameWithoutExtension(fileName)}.{extension.TrimStart('.')}";
+
         public static int RoundToNearestTen(this double number) =>
             ((int)Math.Round(number / 10.0)) * 10;
 

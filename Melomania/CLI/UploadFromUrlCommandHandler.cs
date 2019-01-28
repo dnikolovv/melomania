@@ -1,10 +1,10 @@
 ﻿using Melomania.Extractor;
 using Melomania.Logging;
 using Melomania.Music;
+using Melomania.Utils;
 using Optional;
 using Optional.Async;
 using System;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace Melomania.CLI
@@ -25,13 +25,15 @@ namespace Melomania.CLI
             arguments
                 .SomeNotNull<UploadFromUrlArguments, Error>("You must provide non-null arguments.")
                 .Filter(args => !string.IsNullOrEmpty(args.Url), "You must provide a non-null url.")
-                .Filter(args => !string.IsNullOrEmpty(args.FileName), "You must provide a non-null file name.")
                 .Filter(args => !string.IsNullOrEmpty(args.DestinationInCollection), $"You must provide a valid path inside your collection (use '.' for root)")
                 .Filter(args => IsValidUrl(args.Url), "Invalid url.").FlatMapAsync(args =>
                  ExtractTrackFromUrl(args.Url)
                 .FlatMapAsync(async track =>
                 {
-                    // TODO: The file name from the arguments is ignored
+                    if (!string.IsNullOrEmpty(arguments.CustomFileName))
+                    {
+                        track.Name = arguments.CustomFileName.SetExtension("mp3");
+                    }
 
                     var uploadResult = await _musicCollection.UploadTrack(track, arguments.DestinationInCollection);
                     
@@ -44,38 +46,10 @@ namespace Melomania.CLI
                 }));
 
         private Task<Option<Track, Error>> ExtractTrackFromUrl(string url) =>
-            _trackExtractor.ExtractTrackFromUrl(url, "i-am-testing.mp3");
+            _trackExtractor.ExtractTrackFromUrl(url);
 
         private static bool IsValidUrl(string url) =>
             Uri.TryCreate(url, UriKind.Absolute, out Uri uriResult) &&
             (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
-
-        //Stream trackStream = ExtractTrackStreamFromUrl(arguments.Url);
-
-        //var track = new Track
-        //{
-        //    Contents = trackStream,
-        //    Name = arguments.FileName
-        //};
-
-        //var result = _musicCollection.UploadTrack(track, arguments.DestinationInCollection);
-
-        //using (var trackStream = File.OpenRead(args.FilePath))
-        //            {
-        //                var trackToUpload = new Track
-        //                {
-        //                    Contents = trackStream,
-        //                    Name = args.FileName
-        //                };
-
-        //                var uploadResult = await _musicCollection.UploadTrack(trackToUpload, path: args.DestinationInCollection);
-
-        //                return uploadResult.Map(result =>
-        //                    new UploadSuccessResult
-        //                    {
-        //                        FileName = result.Name,
-        //                        Path = args.DestinationInCollection
-        //                    });
-        //            }
     }
 }

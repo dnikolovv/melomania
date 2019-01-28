@@ -21,9 +21,11 @@ namespace Melomania
         {
             Console.CursorVisible = false;
 
-            args = new[] { "upload", "url", "https://www.youtube.com/watch?v=5N2_eWruhbM", "Ralchev-Kopanica.mp3", "." };
+            args = new[] { "upload", "url", "https://www.youtube.com/watch?v=5N2_eWruhbM", "." };
 
             var configuration = new Configuration();
+
+            // TODO: A check for whether the tools are downloaded (youtube-dl, ffmpeg)
 
             // This is indeed a very lame way of parsing the command line parameters, but it allows us to achieve
             // multi-level verbs (e.g. "upload path ...") and async handlers fairly easily. I couldn't find an arguments parser
@@ -62,21 +64,21 @@ namespace Melomania
         private static async Task UploadFromUrl(string[] args, Configuration configuration)
         {
             // TODO: youtube-dl should be embedded or stored inside the config folder
-            var trackExtractor = new YoutubeDlTrackExtractor(Directory.GetCurrentDirectory(), /*TODO: Pls*/ Path.Combine(Configuration.RootConfigurationFolder, "_tempFiles"));
+            var trackExtractor = new YoutubeDlTrackExtractor(Directory.GetCurrentDirectory(), /*TODO: Pls*/ Path.Combine(Configuration.RootConfigurationFolder, "temp"));
             var collection = await GetDriveMusicCollection(configuration);
             var logger = new ConsoleLogger();
 
             var commandHandler = new UploadFromUrlCommandHandler(trackExtractor, collection, logger);
 
             var url = args[2];
-            var fileName = args[3];
-            var destination = args[4];
+            var destination = args[3];
+            var fileName = args.ElementAtOrDefault(4);
 
             var arguments = new UploadFromUrlArguments
             {
                 Url = url,
                 DestinationInCollection = destination,
-                FileName = fileName
+                CustomFileName = fileName
             };
 
             var result = await commandHandler.ExecuteAsync(arguments);
@@ -95,7 +97,7 @@ namespace Melomania
             Console.WriteLine("Supported commands:");
             Console.WriteLine("'setup'");
             Console.WriteLine("'upload path {folder path} {path inside collection ('.' for root)}'");
-            Console.WriteLine("'upload url {url} {file name} {path inside collection ('.' for root)}");
+            Console.WriteLine("'upload url {url} {path inside collection ('.' for root)} {*optional* custom file name}");
         }
 
         private static async Task Setup(Configuration configuration)
