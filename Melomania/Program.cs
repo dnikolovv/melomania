@@ -28,6 +28,7 @@ namespace Melomania
             var configuration = new Configuration();
             
             // TODO: This code is shit
+            // TODO: A command that allows you to re-download the tools if they are corrupted
             await CheckWhetherToolsAreDownloaded(Configuration.ToolsFolder);
             await ParseArguments(args, configuration);
 
