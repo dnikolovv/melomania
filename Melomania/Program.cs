@@ -4,6 +4,7 @@ using Melomania.Config;
 using Melomania.Extractor;
 using Melomania.GoogleDrive;
 using Melomania.Logging;
+using Melomania.Tools;
 using Melomania.Utils;
 using System;
 using System.IO;
@@ -15,6 +16,7 @@ namespace Melomania
 {
     public class Program
     {
+        // TODO: Yeah but no
         private const string RootCollectionFolderConfigurationKey = "rootCollectionFolder";
 
         public static async Task Main(string[] args)
@@ -24,9 +26,28 @@ namespace Melomania
             args = new[] { "upload", "url", "https://www.youtube.com/watch?v=5N2_eWruhbM", "." };
 
             var configuration = new Configuration();
+            
+            // TODO: This code is shit
+            await CheckWhetherToolsAreDownloaded(Configuration.ToolsFolder);
+            await ParseArguments(args, configuration);
 
-            // TODO: A check for whether the tools are downloaded (youtube-dl, ffmpeg)
+            Console.Read();
+        }
 
+        private static async Task CheckWhetherToolsAreDownloaded(string toolsFolder)
+        {
+            var provider = new YoutubeDlProvider();
+
+            Console.WriteLine("Checking for tools...");
+            provider.OnToolDownloadStarting += tool => Console.WriteLine($"Downloading {tool.Name}...");
+            provider.OnToolDownloadCompleted += tool => Console.WriteLine($"Successfully downloaded {tool.Name}!");
+            provider.OnToolIgnored += tool => Console.WriteLine($"Skipping downloading {tool.Name} because it already exists...");
+
+            await provider.DownloadTools(toolsFolder, ignoreIfExisting: true);
+        }
+
+        private static async Task ParseArguments(string[] args, Configuration configuration)
+        {
             // This is indeed a very lame way of parsing the command line parameters, but it allows us to achieve
             // multi-level verbs (e.g. "upload path ...") and async handlers fairly easily. I couldn't find an arguments parser
             // library that could do this without too much code gymnastics
@@ -57,14 +78,11 @@ namespace Melomania
             {
                 DisplaySupportedCommands();
             }
-
-            Console.Read();
         }
 
         private static async Task UploadFromUrl(string[] args, Configuration configuration)
         {
-            // TODO: youtube-dl should be embedded or stored inside the config folder
-            var trackExtractor = new YoutubeDlTrackExtractor(Directory.GetCurrentDirectory(), /*TODO: Pls*/ Path.Combine(Configuration.RootConfigurationFolder, "temp"));
+            var trackExtractor = new YoutubeDlTrackExtractor(Configuration.ToolsFolder, /*TODO: Pls*/ Path.Combine(Configuration.RootConfigurationFolder, "temp"));
             var collection = await GetDriveMusicCollection(configuration);
             var logger = new ConsoleLogger();
 

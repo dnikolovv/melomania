@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Melomania.CLI
 {
-    public abstract class AsyncCommand<TArguments, TResult>
+    public abstract class AsyncCommand<TArguments, TResult> : IAsyncCommand
     {
         public AsyncCommand(ILogger logger)
         {

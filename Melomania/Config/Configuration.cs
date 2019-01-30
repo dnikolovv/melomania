@@ -22,6 +22,8 @@ namespace Melomania.Config
             }
         }
 
+        public static string ToolsFolder => Path.Combine(RootConfigurationFolder, "tools");
+
         private static string ConfigurationPath => Path.Combine(RootConfigurationFolder, "config.melomania");
 
         public void SetValue(string key, string value)
