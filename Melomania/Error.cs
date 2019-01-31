@@ -36,6 +36,6 @@ namespace Melomania
             new Error(first.Messages.Concat(second.Messages));
 
         public override string ToString() =>
-            string.Join($",{Environment.NewLine}", Messages);
+            string.Join($"{Environment.NewLine}", Messages);
     }
 }

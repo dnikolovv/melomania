@@ -36,7 +36,6 @@ namespace Melomania
             IToolsProvider toolsProvider,
             IMusicCollection musicCollection,
             ITrackExtractor trackExtractor,
-            // TODO: Abstract over the google drive service to enable implementing other cloud storage providers
             GoogleDriveService googleDriveService,
             Configuration configuration)
         {
@@ -57,13 +56,9 @@ namespace Melomania
                 "upload url {url} {path inside collectio ('.' for root)} {*optional* custom file name}"
             };
 
-        public Task<Option<DownloadToolsResult, Error>> CheckWhetherToolsAreDownloaded(string toolsFolder)
-        {
-            _logger.WriteLine("Checking for tools...");
-
-            return _toolsProvider
+        public Task<Option<DownloadToolsResult, Error>> CheckWhetherToolsAreDownloaded(string toolsFolder) =>
+            _toolsProvider
                 .DownloadTools(toolsFolder, ignoreIfExisting: true);
-        }
 
         public async Task<Option<Unit, Error>> HandleArguments(string[] args)
         {
@@ -86,7 +81,7 @@ namespace Melomania
         }
 
         private Option<Unit, Error> CommandNotSupported() =>
-            Option.None<Unit, Error>(SupportedCommands);
+            Option.None<Unit, Error>(new string[] { "Supported commands:" }.Concat(SupportedCommands).ToArray());
 
         private async Task<Option<Unit, Error>> Setup()
         {
