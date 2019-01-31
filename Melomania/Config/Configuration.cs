@@ -24,11 +24,9 @@ namespace Melomania.Config
             }
         }
 
-        public static string ToolsFolder => Path.Combine(RootConfigurationFolder, "tools");
-
         public static string TempFolder => Path.Combine(RootConfigurationFolder, "temp");
-
-        private static string ConfigurationPath => Path.Combine(RootConfigurationFolder, "config.melomania");
+        public static string ToolsFolder => Path.Combine(RootConfigurationFolder, "tools");
+        private static string ConfigFilePath => Path.Combine(RootConfigurationFolder, "config.melomania");
 
         public Dictionary<string, string> GetAllValues()
         {
@@ -37,7 +35,7 @@ namespace Melomania.Config
             {
                 // The expected format for each line is 'key=value'
                 var keyValuePairs = File
-                    .ReadAllLines(ConfigurationPath)
+                    .ReadAllLines(ConfigFilePath)
                     .Select(row => row.Split('='))
                     .ToDictionary(row => row[0], row => row[1]);
 
@@ -72,8 +70,8 @@ namespace Melomania.Config
             var configurationContents = string.Join(Environment.NewLine, configurationPairs);
 
             // The file is very small, so we can simply rewrite it again instead of doing "in-place" editing
-            File.WriteAllText(ConfigurationPath, string.Empty);
-            File.WriteAllText(ConfigurationPath, configurationContents);
+            File.WriteAllText(ConfigFilePath, string.Empty);
+            File.WriteAllText(ConfigFilePath, configurationContents);
         }
     }
 }

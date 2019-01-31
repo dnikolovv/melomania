@@ -12,14 +12,15 @@ namespace Melomania.CLI.Handlers
 {
     public class UploadFromUrlCommandHandler : IAsyncCommandHandler<UploadFromUrlArguments, UploadSuccessfulResult>
     {
+        private readonly IMusicCollection _musicCollection;
+
+        private readonly ITrackExtractor _trackExtractor;
+
         public UploadFromUrlCommandHandler(ITrackExtractor trackExtractor, IMusicCollection musicCollection)
         {
             _trackExtractor = trackExtractor;
             _musicCollection = musicCollection;
         }
-
-        private readonly ITrackExtractor _trackExtractor;
-        private readonly IMusicCollection _musicCollection;
 
         public Task<Option<UploadSuccessfulResult, Error>> ExecuteAsync(UploadFromUrlArguments arguments) =>
             arguments
@@ -36,7 +37,7 @@ namespace Melomania.CLI.Handlers
                     }
 
                     var uploadResult = await _musicCollection.UploadTrack(track, arguments.DestinationInCollection);
-                    
+
                     return uploadResult.Map(result =>
                         new UploadSuccessfulResult
                         {
@@ -45,11 +46,11 @@ namespace Melomania.CLI.Handlers
                         });
                 }));
 
-        private Task<Option<Track, Error>> ExtractTrackFromUrl(string url) =>
-            _trackExtractor.ExtractTrackFromUrl(url);
-
         private static bool IsValidUrl(string url) =>
             Uri.TryCreate(url, UriKind.Absolute, out Uri uriResult) &&
             (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+
+        private Task<Option<Track, Error>> ExtractTrackFromUrl(string url) =>
+            _trackExtractor.ExtractTrackFromUrl(url);
     }
 }

@@ -26,11 +26,11 @@ namespace Melomania.Extractor
             _tempFolder = tempFolder;
         }
 
-        public event Action<TrackDownloadInfo> OnDownloadFinished;
+        public event Action<TrackExtractionInfo> OnExtractionFinished;
 
-        public event Action<TrackDownloadInfo> OnDownloadProgressChanged;
+        public event Action<TrackExtractionInfo> OnExtractionProgressChanged;
 
-        public event Action<TrackDownloadInfo> OnDownloadStarting;
+        public event Action<TrackExtractionInfo> OnExtractionStarting;
 
         public Task<Option<Track, Error>> ExtractTrackFromUrl(string url) =>
             CheckForFfmpeg(_toolsFolder).FlatMapAsync(ffmpegPath =>
@@ -67,7 +67,7 @@ namespace Melomania.Extractor
                    {
                        if (sender is DownloadInfo info && args.PropertyName == nameof(DownloadInfo.VideoProgress))
                        {
-                           OnDownloadProgressChanged?.Invoke(new TrackDownloadInfo
+                           OnExtractionProgressChanged?.Invoke(new TrackExtractionInfo
                            {
                                Title = fileName,
                                Progress = info.VideoProgress
@@ -75,17 +75,17 @@ namespace Melomania.Extractor
                        }
                    };
 
-                   var trackInfo = new TrackDownloadInfo
+                   var trackInfo = new TrackExtractionInfo
                    {
                        Title = fileName
                    };
 
-                   OnDownloadStarting?.Invoke(trackInfo);
+                   OnExtractionStarting?.Invoke(trackInfo);
 
                    await youtubeDl.PrepareDownloadAsync();
                    await youtubeDl.DownloadAsync();
 
-                   OnDownloadFinished?.Invoke(trackInfo);
+                   OnExtractionFinished?.Invoke(trackInfo);
 
                    var fileStream = File.OpenRead(outputPath);
                    var memoryStream = new MemoryStream(new byte[fileStream.Length]);

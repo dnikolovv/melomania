@@ -2,8 +2,7 @@
 {
     public class MusicCollectionEntry
     {
-        public MusicCollectionEntryType Type { get; set; }
-
         public string Name { get; set; }
+        public MusicCollectionEntryType Type { get; set; }
     }
 }

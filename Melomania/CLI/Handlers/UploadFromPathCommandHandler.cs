@@ -10,12 +10,12 @@ namespace Melomania.CLI.Handlers
 {
     public class UploadFromPathCommandHandler : IAsyncCommandHandler<UploadFromPathArguments, UploadSuccessfulResult>
     {
+        private readonly IMusicCollection _musicCollection;
+
         public UploadFromPathCommandHandler(IMusicCollection musicCollection)
         {
             _musicCollection = musicCollection;
         }
-
-        private readonly IMusicCollection _musicCollection;
 
         public Task<Option<UploadSuccessfulResult, Error>> ExecuteAsync(UploadFromPathArguments arguments) =>
             arguments

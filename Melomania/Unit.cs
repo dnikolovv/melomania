@@ -1,7 +1,7 @@
 ﻿namespace Melomania
 {
     /// <summary>
-    /// Used to signal a side effect.
+    /// Used to signal that a side effect was produced.
     /// </summary>
     public struct Unit
     {

@@ -14,19 +14,20 @@ namespace Melomania.Cloud.GoogleDrive
     {
         private const string DriveFolderMimeType = "application/vnd.google-apps.folder";
 
+        private readonly string _baseCollectionFolder;
+
+        private readonly GoogleDriveService _googleDriveService;
+
         public GoogleDriveMusicCollection(GoogleDriveService googleDriveService, string baseCollectionFolder)
         {
             _googleDriveService = googleDriveService ?? throw new ArgumentNullException(nameof(googleDriveService));
             _baseCollectionFolder = baseCollectionFolder ?? throw new ArgumentNullException(nameof(baseCollectionFolder));
         }
 
-        private readonly GoogleDriveService _googleDriveService;
-        private readonly string _baseCollectionFolder;
-
-        public event Action<UploadStarting> OnUploadStarting
+        public event Action<UploadFailureResult> OnUploadFailure
         {
-            add { _googleDriveService.OnUploadStarting += value; }
-            remove { _googleDriveService.OnUploadStarting -= value; }
+            add { _googleDriveService.OnUploadFailure += value; }
+            remove { _googleDriveService.OnUploadFailure -= value; }
         }
 
         public event Action<UploadProgress> OnUploadProgressChanged
@@ -35,16 +36,16 @@ namespace Melomania.Cloud.GoogleDrive
             remove { _googleDriveService.OnUploadProgressChanged -= value; }
         }
 
+        public event Action<UploadStarting> OnUploadStarting
+        {
+            add { _googleDriveService.OnUploadStarting += value; }
+            remove { _googleDriveService.OnUploadStarting -= value; }
+        }
+
         public event Action<UploadSuccessResult> OnUploadSuccessfull
         {
             add { _googleDriveService.OnUploadSuccessfull += value; }
             remove { _googleDriveService.OnUploadSuccessfull -= value; }
-        }
-
-        public event Action<UploadFailureResult> OnUploadFailure
-        {
-            add { _googleDriveService.OnUploadFailure += value; }
-            remove { _googleDriveService.OnUploadFailure -= value; }
         }
 
         /// <summary>
@@ -71,16 +72,17 @@ namespace Melomania.Cloud.GoogleDrive
                 });
         }
 
-        public Task<Option<MusicCollectionEntry, Error>> UploadTrack(Track track, string relativePath)
-        {
-            // TODO: Make pretty
-            return _googleDriveService.UploadFile(track.Contents, track.Name, GoogleDriveFileContentType.Audio, GenerateFullPath(relativePath)).MapAsync(async file =>
-            new MusicCollectionEntry
+        public Task<Option<MusicCollectionEntry, Error>> UploadTrack(Track track, string relativePath) =>
+            _googleDriveService.UploadFile(
+                track.Contents,
+                track.Name,
+                GoogleDriveFileContentType.Audio,
+                GenerateFullPath(relativePath))
+            .MapAsync(async file => new MusicCollectionEntry
             {
                 Name = file.Name,
                 Type = MusicCollectionEntryType.Track
             });
-        }
 
         private string GenerateFullPath(string relativePath)
         {
@@ -88,7 +90,7 @@ namespace Melomania.Cloud.GoogleDrive
             {
                 return _baseCollectionFolder;
             }
-            
+
             // We interpret '.' as the base folder
             return relativePath == "." ?
                 _baseCollectionFolder :

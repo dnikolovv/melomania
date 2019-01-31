@@ -8,11 +8,19 @@ namespace Melomania.Utils
 {
     public static class Extensions
     {
-        public static string SetExtension(this string fileName, string extension) =>
-            $"{Path.GetFileNameWithoutExtension(fileName)}.{extension.TrimStart('.')}";
+        public static string GetDescription(this Enum enumValue) =>
+            enumValue
+                .GetType()
+                .GetMember(enumValue.ToString())
+                .FirstOrDefault()?
+                .GetCustomAttribute<DescriptionAttribute>()?
+                .Description;
 
         public static int RoundToNearestTen(this double number) =>
-            ((int)Math.Round(number / 10.0)) * 10;
+                    ((int)Math.Round(number / 10.0)) * 10;
+
+        public static string SetExtension(this string fileName, string extension) =>
+            $"{Path.GetFileNameWithoutExtension(fileName)}.{extension.TrimStart('.')}";
 
         public static async Task WaitForExitAsync(this Process process, CancellationToken cancellationToken = default)
         {

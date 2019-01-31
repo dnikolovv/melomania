@@ -4,12 +4,10 @@ using Melomania.Config;
 using Melomania.Extractor;
 using Melomania.IO;
 using Melomania.Tools;
-using Melomania.Utils;
 using Optional;
 using Optional.Async;
 using System;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Melomania
@@ -32,9 +30,9 @@ namespace Melomania
 
             var executionResult = await (GetDriveMusicCollection(configuration, driveService).FlatMapAsync(musicCollection =>
             {
-                trackExtractor.OnDownloadStarting += info => logger.WriteLine($"Now downloading '{info.Title}'...");
-                trackExtractor.OnDownloadProgressChanged += info => logger.WriteLine($"'{info.Title}' progress: {info.Progress}%");
-                trackExtractor.OnDownloadFinished += info => logger.WriteLine($"Successfully downloaded '{info.Title}'!");
+                trackExtractor.OnExtractionStarting += info => logger.WriteLine($"Now downloading '{info.Title}'...");
+                trackExtractor.OnExtractionProgressChanged += info => logger.WriteLine($"'{info.Title}' progress: {info.Progress}%");
+                trackExtractor.OnExtractionFinished += info => logger.WriteLine($"Successfully downloaded '{info.Title}'!");
 
                 toolsProvider.OnToolDownloadStarting += tool => logger.WriteLine($"Downloading '{tool.Name}'...");
                 toolsProvider.OnToolDownloadCompleted += tool => logger.WriteLine($"Successfully downloaded '{tool.Name}'!");
@@ -63,6 +61,12 @@ namespace Melomania
                 none: error => Console.WriteLine(error));
         }
 
+        /// <summary>
+        /// Retrieves a <see cref="GoogleDriveMusicCollection"/> instance if the configuration is properly set.
+        /// </summary>
+        /// <param name="configuration"></param>
+        /// <param name="driveService"></param>
+        /// <returns></returns>
         private static Task<Option<GoogleDriveMusicCollection, Error>> GetDriveMusicCollection(Configuration configuration, GoogleDriveService driveService) =>
             configuration
                 .GetRootCollectionFolder()
@@ -92,14 +96,6 @@ namespace Melomania
 
                 return driveService;
             }
-        }
-
-        public static string ProgressBarFromPercentage(double percentage)
-        {
-            var numberOfBars = percentage.RoundToNearestTen() / 10;
-            var barFilling = new StringBuilder().Insert(0, "---", numberOfBars).ToString();
-
-            return $"[{string.Format("{0,-30}", barFilling)}]";
         }
     }
 }

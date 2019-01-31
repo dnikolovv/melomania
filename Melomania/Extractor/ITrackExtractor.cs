@@ -7,11 +7,11 @@ namespace Melomania.Extractor
 {
     public interface ITrackExtractor
     {
-        event Action<TrackDownloadInfo> OnDownloadFinished;
+        event Action<TrackExtractionInfo> OnExtractionFinished;
 
-        event Action<TrackDownloadInfo> OnDownloadProgressChanged;
+        event Action<TrackExtractionInfo> OnExtractionProgressChanged;
 
-        event Action<TrackDownloadInfo> OnDownloadStarting;
+        event Action<TrackExtractionInfo> OnExtractionStarting;
 
         Task<Option<Track, Error>> ExtractTrackFromUrl(string url);
     }

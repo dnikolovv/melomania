@@ -8,13 +8,13 @@ namespace Melomania.Music
 {
     public interface IMusicCollection
     {
-        event Action<UploadStarting> OnUploadStarting;
+        event Action<UploadFailureResult> OnUploadFailure;
 
         event Action<UploadProgress> OnUploadProgressChanged;
 
-        event Action<UploadSuccessResult> OnUploadSuccessfull;
+        event Action<UploadStarting> OnUploadStarting;
 
-        event Action<UploadFailureResult> OnUploadFailure;
+        event Action<UploadSuccessResult> OnUploadSuccessfull;
 
         Task<IEnumerable<MusicCollectionEntry>> GetTracksAsync(int pageSize, string path);
 

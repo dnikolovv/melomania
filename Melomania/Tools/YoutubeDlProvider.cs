@@ -9,9 +9,12 @@ namespace Melomania.Tools
 {
     public class YoutubeDlProvider : IToolsProvider
     {
-        public event Action<ToolDownloadInfo> OnToolDownloadStarting;
         public event Action<ToolDownloadInfo> OnToolDownloadCompleted;
+
         public event Action<ToolDownloadInfo> OnToolDownloadProgressChanged;
+
+        public event Action<ToolDownloadInfo> OnToolDownloadStarting;
+
         public event Action<ToolDownloadInfo> OnToolIgnored;
 
         // TODO: Remove hardcoded urls
@@ -64,6 +67,5 @@ namespace Melomania.Tools
                 }
             }
         }
-
     }
 }

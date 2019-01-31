@@ -1,9 +1,8 @@
 ﻿namespace Melomania.Extractor
 {
-    public class TrackDownloadInfo
+    public class TrackExtractionInfo
     {
-        public string Title { get; set; }
-
         public double Progress { get; set; }
+        public string Title { get; set; }
     }
 }
