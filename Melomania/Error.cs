@@ -17,9 +17,8 @@ namespace Melomania
             Date = DateTime.Now;
         }
 
-        public IReadOnlyList<string> Messages { get; }
-
         public DateTime Date { get; }
+        public IReadOnlyList<string> Messages { get; }
 
         public static implicit operator Error(string message) =>
             new Error(message);
@@ -29,6 +28,9 @@ namespace Melomania
 
         public static implicit operator Error(Error[] errors) =>
             errors.Aggregate(MergeErrors);
+
+        public static implicit operator string(Error error) =>
+                    error.ToString();
 
         public static Error MergeErrors(Error first, Error second) =>
             new Error(first.Messages.Concat(second.Messages));

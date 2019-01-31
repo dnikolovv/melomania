@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Melomania
+namespace Melomania.Cloud.Results
 {
     public class UploadStarting
     {

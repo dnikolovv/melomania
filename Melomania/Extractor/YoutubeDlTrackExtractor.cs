@@ -11,85 +11,32 @@ using System.Threading.Tasks;
 
 namespace Melomania.Extractor
 {
+    /// <summary>
+    /// Uses the youtube-dl tool with ffmpeg and ffprobe to extract .mp3 tracks from urls.
+    /// </summary>
     public class YoutubeDlTrackExtractor : ITrackExtractor
     {
+        private readonly string _tempFolder;
+
+        private readonly string _toolsFolder;
+
         public YoutubeDlTrackExtractor(string toolsFolder, string tempFolder)
         {
             _toolsFolder = toolsFolder;
             _tempFolder = tempFolder;
         }
 
-        private readonly string _toolsFolder;
-        private readonly string _tempFolder;
+        public event Action<TrackDownloadInfo> OnDownloadFinished;
 
-        public event Action<DownloadInfo> OnDownloadStarting;
-        public event Action<int> OnDownloadProgressChanged;
-        public event Action<DownloadInfo> OnDownloadFinished;
+        public event Action<TrackDownloadInfo> OnDownloadProgressChanged;
+
+        public event Action<TrackDownloadInfo> OnDownloadStarting;
 
         public Task<Option<Track, Error>> ExtractTrackFromUrl(string url) =>
             CheckForFfmpeg(_toolsFolder).FlatMapAsync(ffmpegPath =>
             GetYoutubeDl(_toolsFolder, ffmpegPath, _tempFolder).FlatMapAsync(youtubeDl =>
             GetDownloadInfo(youtubeDl, url).FlatMapAsync(downloadInfo =>
             DownloadTrackAsync(youtubeDl, downloadInfo, url, _tempFolder))));
-
-        private Task<Option<Track, Error>> DownloadTrackAsync(YoutubeDL youtubeDl, DownloadInfo downloadInfo, string url, string tempFolder) =>
-            url.SomeWhen<string, Error>(x => !string.IsNullOrEmpty(x), $"Invalid url")
-               .MapAsync(async _ =>
-               {
-                   var fileName = $"{RemoveSequentialWhitespaces(downloadInfo.Title)}.mp3";
-                   var outputPath = Path.Combine(tempFolder, fileName);
-
-                   // TODO: On download preparation event
-                   youtubeDl.Options.FilesystemOptions.Output = outputPath;
-                   youtubeDl.VideoUrl = url;
-
-                   // TODO: On download status changed event
-                   // TODO: On download finished event
-
-                   youtubeDl.Info.PropertyChanged += (sender, args) =>
-                   {
-                       if (sender is DownloadInfo info && args.PropertyName == nameof(DownloadInfo.VideoProgress))
-                       {
-                           OnDownloadProgressChanged?.Invoke(info.VideoProgress);
-                       }
-                   };
-
-                   OnDownloadStarting?.Invoke(downloadInfo);
-                   
-                   // DownloadAsync(url) does not work.
-                   await youtubeDl.PrepareDownloadAsync();
-                   await youtubeDl.DownloadAsync();
-
-                   OnDownloadFinished?.Invoke(youtubeDl.Info);
-
-                   var fileStream = File.OpenRead(outputPath);
-                   var memoryStream = new MemoryStream(new byte[fileStream.Length]);
-                   await fileStream.CopyToAsync(memoryStream);
-                   fileStream.Close();
-                   File.Delete(outputPath);
-
-                   return new Track
-                   {
-                       Contents = memoryStream,
-                       Name = fileName
-                   };
-               });
-
-        /// <summary>
-        /// Replaces all sequences of whitespace characters with a single space. E.g. "asd     asd" becomes "asd asd".
-        /// This is needed due to a bug in YoutubeDl. It often inserts multiple spaces when there is one in the video title.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <returns>The string with sequential whitespaces removed.</returns>
-        private string RemoveSequentialWhitespaces(string input) =>
-            string.IsNullOrEmpty(input) ?
-            input :
-            Regex.Replace(input, @"\s+", " ");
-
-        // TODO: Handle multi download info (there is a MultiDownloadInfo class inheriting DownloadInfo)
-        private Task<Option<DownloadInfo, Error>> GetDownloadInfo(YoutubeDL youtubeDl, string url) =>
-            url.SomeWhen<string, Error>(x => !string.IsNullOrEmpty(x), $"Invalid url.")
-               .MapAsync(_ => youtubeDl.GetDownloadInfoAsync(url));
 
         private Option<string, Error> CheckForFfmpeg(string toolsPath) =>
             toolsPath
@@ -105,6 +52,58 @@ namespace Melomania.Extractor
 
                     return ffmpegExists && ffProbeExists;
                 }, $"ffmpeg or ffprobe couldn't be found inside {toolsPath}.");
+
+        private Task<Option<Track, Error>> DownloadTrackAsync(YoutubeDL youtubeDl, DownloadInfo downloadInfo, string url, string tempFolder) =>
+            url.SomeWhen<string, Error>(x => !string.IsNullOrEmpty(x), $"Invalid url")
+               .MapAsync(async _ =>
+               {
+                   // TODO: Shorten
+                   var fileName = $"{RemoveSequentialWhitespaces(downloadInfo.Title)}.mp3";
+                   var outputPath = Path.Combine(tempFolder, fileName);
+
+                   youtubeDl.Options.FilesystemOptions.Output = outputPath;
+                   youtubeDl.VideoUrl = url;
+                   youtubeDl.Info.PropertyChanged += (sender, args) =>
+                   {
+                       if (sender is DownloadInfo info && args.PropertyName == nameof(DownloadInfo.VideoProgress))
+                       {
+                           OnDownloadProgressChanged?.Invoke(new TrackDownloadInfo
+                           {
+                               Title = fileName,
+                               Progress = info.VideoProgress
+                           });
+                       }
+                   };
+
+                   var trackInfo = new TrackDownloadInfo
+                   {
+                       Title = fileName
+                   };
+
+                   OnDownloadStarting?.Invoke(trackInfo);
+
+                   await youtubeDl.PrepareDownloadAsync();
+                   await youtubeDl.DownloadAsync();
+
+                   OnDownloadFinished?.Invoke(trackInfo);
+
+                   var fileStream = File.OpenRead(outputPath);
+                   var memoryStream = new MemoryStream(new byte[fileStream.Length]);
+                   await fileStream.CopyToAsync(memoryStream);
+                   fileStream.Close();
+                   File.Delete(outputPath);
+
+                   return new Track
+                   {
+                       Contents = memoryStream,
+                       Name = fileName
+                   };
+               });
+
+        // TODO: Handle multi download info (there is a MultiDownloadInfo class inheriting DownloadInfo)
+        private Task<Option<DownloadInfo, Error>> GetDownloadInfo(YoutubeDL youtubeDl, string url) =>
+            url.SomeWhen<string, Error>(x => !string.IsNullOrEmpty(x), $"Invalid url.")
+               .MapAsync(_ => youtubeDl.GetDownloadInfoAsync(url));
 
         private Option<YoutubeDL, Error> GetYoutubeDl(string toolsPath, string ffmpegPath, string outputPath) =>
             toolsPath
@@ -122,5 +121,16 @@ namespace Melomania.Extractor
 
                     return youtubeDl;
                 });
+
+        /// <summary>
+        /// Replaces all sequences of whitespace characters with a single space. E.g. "asd     asd" becomes "asd asd".
+        /// This is needed due to a bug in YoutubeDl. It often inserts multiple spaces when there is one in the video title.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns>The string with sequential whitespaces removed.</returns>
+        private string RemoveSequentialWhitespaces(string input) =>
+            string.IsNullOrEmpty(input) ?
+            input :
+            Regex.Replace(input, @"\s+", " ");
     }
 }

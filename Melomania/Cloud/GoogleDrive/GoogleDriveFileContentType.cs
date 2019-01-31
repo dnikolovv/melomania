@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Melomania.GoogleDrive
+namespace Melomania.Cloud.GoogleDrive
 {
     public enum GoogleDriveFileContentType
     {

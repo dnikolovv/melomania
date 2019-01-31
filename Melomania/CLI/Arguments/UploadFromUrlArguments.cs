@@ -1,4 +1,4 @@
-﻿namespace Melomania.CLI
+﻿namespace Melomania.CLI.Arguments
 {
     public class UploadFromUrlArguments
     {

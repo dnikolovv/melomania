@@ -1,6 +1,6 @@
-﻿namespace Melomania
+﻿namespace Melomania.CLI.Results
 {
-    public class UploadSuccessResult
+    public class UploadSuccessfulResult
     {
         public string FileName { get; set; }
 

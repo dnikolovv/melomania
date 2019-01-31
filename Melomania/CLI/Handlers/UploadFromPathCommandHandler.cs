@@ -1,23 +1,23 @@
-﻿using Melomania.Logging;
+﻿using Melomania.CLI.Arguments;
+using Melomania.CLI.Results;
 using Melomania.Music;
 using Optional;
 using Optional.Async;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Melomania.CLI
+namespace Melomania.CLI.Handlers
 {
-    public class UploadFromPathCommandHandler : AsyncCommand<UploadFromPathArguments, UploadSuccessResult>
+    public class UploadFromPathCommandHandler : IAsyncCommandHandler<UploadFromPathArguments, UploadSuccessfulResult>
     {
-        public UploadFromPathCommandHandler(IMusicCollection musicCollection, ILogger logger)
-            : base (logger)
+        public UploadFromPathCommandHandler(IMusicCollection musicCollection)
         {
             _musicCollection = musicCollection;
         }
 
         private readonly IMusicCollection _musicCollection;
 
-        public override Task<Option<UploadSuccessResult, Error>> ExecuteAsync(UploadFromPathArguments arguments) =>
+        public Task<Option<UploadSuccessfulResult, Error>> ExecuteAsync(UploadFromPathArguments arguments) =>
             arguments
                 .SomeNotNull<UploadFromPathArguments, Error>("You must provide non-null arguments.")
                 .Filter(args => !string.IsNullOrEmpty(args.FilePath) && File.Exists(args.FilePath), $"No files were found at path '{arguments.FilePath}'")
@@ -36,7 +36,7 @@ namespace Melomania.CLI
                         var uploadResult = await _musicCollection.UploadTrack(trackToUpload, path: args.DestinationInCollection);
 
                         return uploadResult.Map(result =>
-                            new UploadSuccessResult
+                            new UploadSuccessfulResult
                             {
                                 FileName = result.Name,
                                 Path = args.DestinationInCollection

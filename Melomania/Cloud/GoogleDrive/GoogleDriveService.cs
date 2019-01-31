@@ -1,6 +1,7 @@
 ﻿using Google.Apis.Drive.v3;
 using Google.Apis.Drive.v3.Data;
 using Google.Apis.Upload;
+using Melomania.Cloud.Results;
 using Optional;
 using Optional.Async;
 using System;
@@ -8,8 +9,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Melomania.GoogleDrive
+namespace Melomania.Cloud.GoogleDrive
 {
+    // TODO: This should be abstracted into a service that can handle all types of cloud storage providers e.g. Dropbox
     public class GoogleDriveService
     {
         public GoogleDriveService(DriveService driveService)
@@ -41,7 +43,7 @@ namespace Melomania.GoogleDrive
             if (!string.IsNullOrEmpty(path))
             {
                 var folderId = await GetFolderIdFromPathAsync(path);
-                
+
                 // TODO: Decide whether to create a new folder if the path doesn't exist or return an error.
                 folderId.MatchSome(id =>
                     listRequest.Q += $" and '{id}' in parents");
@@ -90,7 +92,7 @@ namespace Melomania.GoogleDrive
                             OnUploadStarting?.Invoke(new UploadStarting { FileName = fileName, DestinationPath = path, FileSizeInBytes = fileContents.Length });
                             break;
                         case UploadStatus.Uploading:
-                            OnUploadProgressChanged?.Invoke(new UploadProgress { BytesSent = progress.BytesSent, TotalBytesToSend = fileContents.Length });
+                            OnUploadProgressChanged?.Invoke(new UploadProgress { FileName = fileName, BytesSent = progress.BytesSent, TotalBytesToSend = fileContents.Length });
                             break;
                         case UploadStatus.Completed:
                             OnUploadSuccessfull?.Invoke(new UploadSuccessResult { FileName = fileName, Path = path });
@@ -170,7 +172,7 @@ namespace Melomania.GoogleDrive
                 var parentsQuery = GenerateParentsQuery(parentIds);
 
                 folderInfoRequest.Fields = "files(id,name,parents)";
-                folderInfoRequest.Q = $"mimeType = 'application/vnd.google-apps.folder' and" +
+                folderInfoRequest.Q = $"mimeType = 'application/vnd.google-apps.folder' and " +
                                       $"name = '{folderName}' and" +
                                       $"{parentsQuery}";
 
@@ -178,8 +180,8 @@ namespace Melomania.GoogleDrive
 
                 return results
                     .Some<IList<File>, Error>()
-                    .Filter(rs => rs?.Count > 0, $"No folders with the name {folderName} were found.")
-                    .Filter(rs => rs?.Count == 1, $"Multiple folders with the name {folderName} were found when one was expected.")
+                    .Filter(rs => rs?.Count > 0, $"No folder with the name '{folderName}' was found.")
+                    .Filter(rs => rs?.Count == 1, $"Multiple folders with the name '{folderName}' were found when one was expected.")
                     .Map(rs => rs.Single().Id);
             }
             // TODO: Research the exact exception that Google throws when the file is not found.
@@ -216,6 +218,6 @@ namespace Melomania.GoogleDrive
             path.SomeNotNull<string, Error>($"The path must not be null.")
                 .Map(p => p.Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries))
                 // Take care of multiple slashes between paths (e.g. ///Music///Disco
-                .Map(ps => ps.Select(p => p.Trim(new [] { '/', '\\' })).ToArray());
+                .Map(ps => ps.Select(p => p.Trim(new[] { '/', '\\' })).ToArray());
     }
 }

@@ -7,15 +7,13 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Melomania.GoogleDrive
+namespace Melomania.Cloud.GoogleDrive
 {
     public class GoogleDriveServiceFactory
     {
         public async Task<GoogleDriveService> GetDriveService(ClientSecrets clientSecrets)
         {
-            // TODO: For windows it should save to appdata
-            //       For Unix it should save to ~
-            var tokenSavePath = Path.Combine(Configuration.RootConfigurationFolder, "google-token");
+            var tokenSavePath = Path.Combine(Configuration.RootConfigurationFolder, "google");
 
             var credentials = await GoogleWebAuthorizationBroker.AuthorizeAsync(
                 clientSecrets,

@@ -10,6 +10,8 @@ namespace Melomania.Config
 {
     public class Configuration
     {
+        private const string RootCollectionFolderKey = "rootCollectionFolder";
+
         public static string RootConfigurationFolder
         {
             get
@@ -24,25 +26,9 @@ namespace Melomania.Config
 
         public static string ToolsFolder => Path.Combine(RootConfigurationFolder, "tools");
 
+        public static string TempFolder => Path.Combine(RootConfigurationFolder, "temp");
+
         private static string ConfigurationPath => Path.Combine(RootConfigurationFolder, "config.melomania");
-
-        public void SetValue(string key, string value)
-        {
-            var values = GetAllValues();
-
-            values.GetValueOrNone(key).Match(
-                some: _ => values[key] = value,
-                none: () => values.Add(key, value));
-
-            var configurationPairs = values
-                .Select(v => $"{v.Key}={v.Value}");
-
-            var configurationContents = string.Join(Environment.NewLine, configurationPairs);
-
-            // The file is very small, so we can simply rewrite it again instead of doing "in-place" editing
-            File.WriteAllText(ConfigurationPath, string.Empty);
-            File.WriteAllText(ConfigurationPath, configurationContents);
-        }
 
         public Dictionary<string, string> GetAllValues()
         {
@@ -63,7 +49,31 @@ namespace Melomania.Config
             }
         }
 
+        public Option<string> GetRootCollectionFolder() =>
+            GetValue(RootCollectionFolderKey);
+
         public Option<string> GetValue(string key) =>
             GetAllValues().GetValueOrNone(key);
+
+        public void SetRootCollectionFolder(string value) =>
+            SetValue(RootCollectionFolderKey, value);
+
+        public void SetValue(string key, string value)
+        {
+            var values = GetAllValues();
+
+            values.GetValueOrNone(key).Match(
+                some: _ => values[key] = value,
+                none: () => values.Add(key, value));
+
+            var configurationPairs = values
+                .Select(v => $"{v.Key}={v.Value}");
+
+            var configurationContents = string.Join(Environment.NewLine, configurationPairs);
+
+            // The file is very small, so we can simply rewrite it again instead of doing "in-place" editing
+            File.WriteAllText(ConfigurationPath, string.Empty);
+            File.WriteAllText(ConfigurationPath, configurationContents);
+        }
     }
 }

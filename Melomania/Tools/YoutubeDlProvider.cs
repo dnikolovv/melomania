@@ -30,10 +30,7 @@ namespace Melomania.Tools
 
                     if (!(ignoreIfExisting && File.Exists(fullPath)))
                     {
-                        if (!Directory.Exists(destinationFolder))
-                        {
-                            Directory.CreateDirectory(destinationFolder);
-                        }
+                        Directory.CreateDirectory(destinationFolder);
 
                         webClient.DownloadProgressChanged += (sender, args) => OnToolDownloadProgressChanged?.Invoke(new ToolDownloadInfo
                         {

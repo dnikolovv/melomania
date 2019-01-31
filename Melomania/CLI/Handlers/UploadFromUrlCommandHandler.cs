@@ -1,5 +1,6 @@
-﻿using Melomania.Extractor;
-using Melomania.Logging;
+﻿using Melomania.CLI.Arguments;
+using Melomania.CLI.Results;
+using Melomania.Extractor;
 using Melomania.Music;
 using Melomania.Utils;
 using Optional;
@@ -7,12 +8,11 @@ using Optional.Async;
 using System;
 using System.Threading.Tasks;
 
-namespace Melomania.CLI
+namespace Melomania.CLI.Handlers
 {
-    public class UploadFromUrlCommandHandler : AsyncCommand<UploadFromUrlArguments, UploadSuccessResult>
+    public class UploadFromUrlCommandHandler : IAsyncCommandHandler<UploadFromUrlArguments, UploadSuccessfulResult>
     {
-        public UploadFromUrlCommandHandler(ITrackExtractor trackExtractor, IMusicCollection musicCollection, ILogger logger)
-            : base(logger)
+        public UploadFromUrlCommandHandler(ITrackExtractor trackExtractor, IMusicCollection musicCollection)
         {
             _trackExtractor = trackExtractor;
             _musicCollection = musicCollection;
@@ -21,7 +21,7 @@ namespace Melomania.CLI
         private readonly ITrackExtractor _trackExtractor;
         private readonly IMusicCollection _musicCollection;
 
-        public override Task<Option<UploadSuccessResult, Error>> ExecuteAsync(UploadFromUrlArguments arguments) =>
+        public Task<Option<UploadSuccessfulResult, Error>> ExecuteAsync(UploadFromUrlArguments arguments) =>
             arguments
                 .SomeNotNull<UploadFromUrlArguments, Error>("You must provide non-null arguments.")
                 .Filter(args => !string.IsNullOrEmpty(args.Url), "You must provide a non-null url.")
@@ -38,7 +38,7 @@ namespace Melomania.CLI
                     var uploadResult = await _musicCollection.UploadTrack(track, arguments.DestinationInCollection);
                     
                     return uploadResult.Map(result =>
-                        new UploadSuccessResult
+                        new UploadSuccessfulResult
                         {
                             FileName = result.Name,
                             Path = args.DestinationInCollection
