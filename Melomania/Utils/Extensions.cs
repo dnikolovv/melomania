@@ -20,7 +20,7 @@ namespace Melomania.Utils
                 .Description;
 
         public static int RoundToNearestTen(this double number) =>
-                    ((int)Math.Round(number / 10.0)) * 10;
+            ((int)Math.Round(number / 10.0)) * 10;
 
         public static string SetExtension(this string fileName, string extension) =>
             $"{Path.GetFileNameWithoutExtension(fileName)}.{extension.TrimStart('.')}";
