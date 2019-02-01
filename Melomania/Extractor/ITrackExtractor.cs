@@ -13,6 +13,11 @@ namespace Melomania.Extractor
 
         event Action<TrackExtractionInfo> OnExtractionStarting;
 
+        /// <summary>
+        /// Retrieves an mp3 track from a given url.
+        /// </summary>
+        /// <param name="url">The url. (e.g. youtube)</param>
+        /// <returns>A track or an error.</returns>
         Task<Option<Track, Error>> ExtractTrackFromUrl(string url);
     }
 }

@@ -1,16 +1,19 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace Melomania.Utils
 {
     public static class Extensions
     {
+        /// <summary>
+        /// Retrieves an enum's description.
+        /// </summary>
+        /// <param name="enumValue"></param>
+        /// <returns>The enum's description.</returns>
         public static string GetDescription(this Enum enumValue) =>
             enumValue
                 .GetType()
@@ -19,40 +22,33 @@ namespace Melomania.Utils
                 .GetCustomAttribute<DescriptionAttribute>()?
                 .Description;
 
+        /// <summary>
+        /// Replaces all sequences of whitespace characters with a single space. E.g. "asd     asd" becomes "asd asd".
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns>The string with sequential whitespaces removed.</returns>
+        public static string RemoveSequentialWhitespaces(this string input) =>
+            string.IsNullOrEmpty(input) ?
+            input :
+            Regex.Replace(input, @"\s+", " ");
+
+        /// <summary>
+        /// Rounds a number to the nearest 10. E.g. 16 -> 20, 23 -> 20, etc.
+        /// </summary>
+        /// <param name="number">The number.</param>
+        /// <returns>The rounded number.</returns>
         public static int RoundToNearestTen(this double number) =>
             ((int)Math.Round(number / 10.0)) * 10;
 
+        /// <summary>
+        /// Takes a file name with or without an extension and adds/edits.
+        /// E.g. "file-name", "mp3" becomes "file-name.mp3"
+        ///      "file-name.avi", "mp3" becomes "file-name.mp3"
+        /// </summary>
+        /// <param name="fileName">The file name.</param>
+        /// <param name="extension">The new extension.</param>
+        /// <returns></returns>
         public static string SetExtension(this string fileName, string extension) =>
             $"{Path.GetFileNameWithoutExtension(fileName)}.{extension.TrimStart('.')}";
-
-        public static async Task WaitForExitAsync(this Process process, CancellationToken cancellationToken = default)
-        {
-            var taskCompletionSource = new TaskCompletionSource<bool>();
-
-            void Process_Exited(object sender, EventArgs e)
-            {
-                taskCompletionSource.TrySetResult(true);
-            }
-
-            process.EnableRaisingEvents = true;
-            process.Exited += Process_Exited;
-
-            try
-            {
-                if (process.HasExited)
-                {
-                    return;
-                }
-
-                using (cancellationToken.Register(() => taskCompletionSource.TrySetCanceled()))
-                {
-                    await taskCompletionSource.Task;
-                }
-            }
-            finally
-            {
-                process.Exited -= Process_Exited;
-            }
-        }
     }
 }

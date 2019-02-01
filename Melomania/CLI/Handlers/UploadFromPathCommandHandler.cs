@@ -33,7 +33,7 @@ namespace Melomania.CLI.Handlers
                             Name = args.FileName
                         };
 
-                        var uploadResult = await _musicCollection.UploadTrack(trackToUpload, path: args.DestinationInCollection);
+                        var uploadResult = await _musicCollection.UploadTrackAsync(trackToUpload, path: args.DestinationInCollection);
 
                         return uploadResult.Map(result =>
                             new UploadSuccessfulResult

@@ -1,4 +1,5 @@
 ﻿using Melomania.Music;
+using Melomania.Utils;
 using NYoutubeDL;
 using NYoutubeDL.Models;
 using Optional;
@@ -6,7 +7,6 @@ using Optional.Async;
 using System;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Melomania.Extractor
@@ -58,7 +58,8 @@ namespace Melomania.Extractor
                .MapAsync(async _ =>
                {
                    // TODO: Shorten
-                   var fileName = $"{RemoveSequentialWhitespaces(downloadInfo.Title)}.mp3";
+                   // We remove the sequential whitespaces from the video title as youtube-dl often adds unnecessary spacing (probably a bug).
+                   var fileName = $"{downloadInfo.Title.RemoveSequentialWhitespaces()}.mp3";
                    var outputPath = Path.Combine(tempFolder, fileName);
 
                    youtubeDl.Options.FilesystemOptions.Output = outputPath;
@@ -121,16 +122,5 @@ namespace Melomania.Extractor
 
                     return youtubeDl;
                 });
-
-        /// <summary>
-        /// Replaces all sequences of whitespace characters with a single space. E.g. "asd     asd" becomes "asd asd".
-        /// This is needed due to a bug in YoutubeDl. It often inserts multiple spaces when there is one in the video title.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <returns>The string with sequential whitespaces removed.</returns>
-        private string RemoveSequentialWhitespaces(string input) =>
-            string.IsNullOrEmpty(input) ?
-            input :
-            Regex.Replace(input, @"\s+", " ");
     }
 }

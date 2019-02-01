@@ -72,7 +72,13 @@ namespace Melomania.Music.GoogleDrive
                 });
         }
 
-        public Task<Option<MusicCollectionEntry, Error>> UploadTrack(Track track, string relativePath) =>
+        /// <summary>
+        /// Uploads a track to your music collection.
+        /// </summary>
+        /// <param name="track">The track.</param>
+        /// <param name="relativePath">The path relative to your music collection root.</param>
+        /// <returns>The new entry or an error.</returns>
+        public Task<Option<MusicCollectionEntry, Error>> UploadTrackAsync(Track track, string relativePath) =>
             _googleDriveService.UploadFile(
                 track.Contents,
                 track.Name,
@@ -86,12 +92,12 @@ namespace Melomania.Music.GoogleDrive
 
         private string GenerateFullPath(string relativePath)
         {
+            // We interpret '.' or empty paths as the base folder
             if (string.IsNullOrEmpty(relativePath))
             {
                 return _baseCollectionFolder;
             }
 
-            // We interpret '.' as the base folder
             return relativePath == "." ?
                 _baseCollectionFolder :
                 Path.Combine(_baseCollectionFolder, relativePath);

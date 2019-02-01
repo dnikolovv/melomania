@@ -36,7 +36,7 @@ namespace Melomania.CLI.Handlers
                         track.Name = arguments.CustomFileName.SetExtension("mp3");
                     }
 
-                    var uploadResult = await _musicCollection.UploadTrack(track, arguments.DestinationInCollection);
+                    var uploadResult = await _musicCollection.UploadTrackAsync(track, arguments.DestinationInCollection);
 
                     return uploadResult.Map(result =>
                         new UploadSuccessfulResult

@@ -31,9 +31,9 @@ namespace Melomania
             var driveService = await GetGoogleDriveService();
             var musicCollectionFactory = new GoogleDriveMusicCollectionFactory(driveService, configuration);
 
-            trackExtractor.OnExtractionStarting += info => logger.WriteLine($"Now downloading '{info.Title}'...");
+            trackExtractor.OnExtractionStarting += info => logger.WriteLine($"Now extracting '{info.Title}'...");
             trackExtractor.OnExtractionProgressChanged += info => logger.WriteLine($"'{info.Title}' progress: {info.Progress}%");
-            trackExtractor.OnExtractionFinished += info => logger.WriteLine($"Successfully downloaded '{info.Title}'!");
+            trackExtractor.OnExtractionFinished += info => logger.WriteLine($"Successfully extracted '{info.Title}'!");
 
             toolsProvider.OnToolDownloadStarting += tool => logger.WriteLine($"Downloading '{tool.Name}'...");
             toolsProvider.OnToolDownloadCompleted += tool => logger.WriteLine($"Successfully downloaded '{tool.Name}'!");
@@ -59,28 +59,6 @@ namespace Melomania
                 some: _ => Console.Write(string.Empty),
                 none: error => Console.WriteLine(error));
         }
-
-        /// <summary>
-        /// Retrieves a <see cref="GoogleDriveMusicCollection"/> instance if the configuration is properly set.
-        /// </summary>
-        /// <param name="configuration"></param>
-        /// <param name="driveService"></param>
-        /// <returns></returns>
-        //private static GoogleDriveMusicCollection GetDriveMusicCollection(Configuration configuration, GoogleDriveService driveService)
-        //{
-        //    var rootCollectionFolderResult = configuration
-        //        .GetRootCollectionFolder();
-
-        //    var rootCollectionFolder = rootCollectionFolderResult.ValueOr(() =>
-        //    {
-        //        configuration.SetRootCollectionFolder(Configuration.DefaultCollectionFolder);
-        //        return Configuration.DefaultCollectionFolder;
-        //    });
-
-        //    var collection = new GoogleDriveMusicCollection(driveService, rootCollectionFolder);
-
-        //    return collection;
-        //}
 
         /// <summary>
         /// Implicitly handles authenticating to Google as their API requires it.
