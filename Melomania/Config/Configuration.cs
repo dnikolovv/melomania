@@ -33,6 +33,8 @@ namespace Melomania.Config
             // TODO: Not handling corrupt file format
             try
             {
+                CheckForConfigFile();
+
                 // The expected format for each line is 'key=value'
                 var keyValuePairs = File
                     .ReadAllLines(ConfigFilePath)
@@ -72,6 +74,14 @@ namespace Melomania.Config
             // The file is very small, so we can simply rewrite it again instead of doing "in-place" editing
             File.WriteAllText(ConfigFilePath, string.Empty);
             File.WriteAllText(ConfigFilePath, configurationContents);
+        }
+
+        private void CheckForConfigFile()
+        {
+            if (!File.Exists(ConfigFilePath))
+            {
+                using (var fs = File.Create(ConfigFilePath)) { }
+            }
         }
     }
 }
