@@ -43,6 +43,9 @@ namespace Melomania
             driveService.OnUploadSuccessfull += info => logger.WriteLine($"Successfully uploaded '{info.FileName}'!");
             driveService.OnUploadFailure += info => logger.WriteLine($"Failed to upload '{info.FileName}' :(");
 
+            // TODO: Implement a command for listing the collection's contents
+            // TODO: Implement a command to redownload the tools if for some reason they became corrupted
+
             var ioHandler = new IOHandler(
                 logger,
                 reader,
