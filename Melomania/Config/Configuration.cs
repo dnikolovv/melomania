@@ -26,7 +26,6 @@ namespace Melomania.Config
 
         public static string TempFolder => Path.Combine(RootConfigurationFolder, "temp");
         public static string ToolsFolder => Path.Combine(RootConfigurationFolder, "tools");
-        public const string DefaultCollectionFolder = "Music";
         private static string ConfigFilePath => Path.Combine(RootConfigurationFolder, "config.melomania");
 
         public Dictionary<string, string> GetAllValues()

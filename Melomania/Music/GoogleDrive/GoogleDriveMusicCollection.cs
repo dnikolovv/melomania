@@ -1,5 +1,5 @@
-﻿using Melomania.Cloud.Results;
-using Melomania.Music;
+﻿using Melomania.Cloud.GoogleDrive;
+using Melomania.Cloud.Results;
 using Optional;
 using Optional.Async;
 using System;
@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Melomania.Cloud.GoogleDrive
+namespace Melomania.Music.GoogleDrive
 {
     public class GoogleDriveMusicCollection : IMusicCollection
     {

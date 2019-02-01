@@ -3,6 +3,7 @@ using Melomania.Cloud.GoogleDrive;
 using Melomania.Config;
 using Melomania.Extractor;
 using Melomania.IO;
+using Melomania.Music.GoogleDrive;
 using Melomania.Tools;
 using Optional.Async;
 using System;
@@ -17,8 +18,8 @@ namespace Melomania
         {
             Console.CursorVisible = false;
 
-            //args = new[] { "fasd", "url", "https://www.youtube.com/watch?v=5N2_eWruhbM", "" };
-            args = new[] { "setup" };
+            args = new[] { "upload", "url", "https://www.youtube.com/watch?v=5N2_eWruhbM", "." };
+            //args = new[] { "setup" };
 
             var logger = new ConsoleLogger();
             var reader = new ConsoleReader();
@@ -28,7 +29,7 @@ namespace Melomania
 
             // TODO: Abstract over the google drive service to enable implementing other cloud storage providers
             var driveService = await GetGoogleDriveService();
-            var musicCollection = GetDriveMusicCollection(configuration, driveService);
+            var musicCollectionFactory = new GoogleDriveMusicCollectionFactory(driveService, configuration);
 
             trackExtractor.OnExtractionStarting += info => logger.WriteLine($"Now downloading '{info.Title}'...");
             trackExtractor.OnExtractionProgressChanged += info => logger.WriteLine($"'{info.Title}' progress: {info.Progress}%");
@@ -46,7 +47,7 @@ namespace Melomania
                 logger,
                 reader,
                 toolsProvider,
-                musicCollection,
+                musicCollectionFactory,
                 trackExtractor,
                 driveService,
                 configuration);
@@ -55,7 +56,7 @@ namespace Melomania
                                   ioHandler.HandleArguments(args));
 
             (await executionResult).Match(
-                some: _ => Console.Read(),
+                some: _ => Console.Write(string.Empty),
                 none: error => Console.WriteLine(error));
         }
 
@@ -65,21 +66,21 @@ namespace Melomania
         /// <param name="configuration"></param>
         /// <param name="driveService"></param>
         /// <returns></returns>
-        private static GoogleDriveMusicCollection GetDriveMusicCollection(Configuration configuration, GoogleDriveService driveService)
-        {
-            var rootCollectionFolderResult = configuration
-                .GetRootCollectionFolder();
+        //private static GoogleDriveMusicCollection GetDriveMusicCollection(Configuration configuration, GoogleDriveService driveService)
+        //{
+        //    var rootCollectionFolderResult = configuration
+        //        .GetRootCollectionFolder();
 
-            var rootCollectionFolder = rootCollectionFolderResult.ValueOr(() =>
-            {
-                configuration.SetRootCollectionFolder(Configuration.DefaultCollectionFolder);
-                return Configuration.DefaultCollectionFolder;
-            });
+        //    var rootCollectionFolder = rootCollectionFolderResult.ValueOr(() =>
+        //    {
+        //        configuration.SetRootCollectionFolder(Configuration.DefaultCollectionFolder);
+        //        return Configuration.DefaultCollectionFolder;
+        //    });
 
-            var collection = new GoogleDriveMusicCollection(driveService, rootCollectionFolder);
+        //    var collection = new GoogleDriveMusicCollection(driveService, rootCollectionFolder);
 
-            return collection;
-        }
+        //    return collection;
+        //}
 
         /// <summary>
         /// Implicitly handles authenticating to Google as their API requires it.

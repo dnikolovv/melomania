@@ -22,7 +22,7 @@ namespace Melomania
 
         private readonly ILogger _logger;
 
-        private readonly IMusicCollection _musicCollection;
+        private readonly IMusicCollectionFactory _musicCollectionFactory;
 
         private readonly IReader _reader;
 
@@ -34,7 +34,7 @@ namespace Melomania
             ILogger logger,
             IReader reader,
             IToolsProvider toolsProvider,
-            IMusicCollection musicCollection,
+            IMusicCollectionFactory musicCollectionFactory,
             ITrackExtractor trackExtractor,
             GoogleDriveService googleDriveService,
             Configuration configuration)
@@ -42,7 +42,7 @@ namespace Melomania
             _logger = logger;
             _reader = reader;
             _toolsProvider = toolsProvider;
-            _musicCollection = musicCollection;
+            _musicCollectionFactory = musicCollectionFactory;
             _trackExtractor = trackExtractor;
             _googleDriveService = googleDriveService;
             _configuration = configuration;
@@ -121,41 +121,47 @@ namespace Melomania
             }
         }
 
-        private async Task<Option<Unit, Error>> UploadFromPath(string[] args)
-        {
-            var handler = new UploadFromPathCommandHandler(_musicCollection);
+        private Task<Option<Unit, Error>> UploadFromPath(string[] args) =>
+            _musicCollectionFactory
+                .GetMusicCollection()
+                .FlatMapAsync(async musicCollection =>
+                {
+                    var handler = new UploadFromPathCommandHandler(musicCollection);
 
-            var filePath = args.ElementAtOrDefault(0);
-            var destinationFolder = args.ElementAtOrDefault(1);
+                    var filePath = args.ElementAtOrDefault(0);
+                    var destinationFolder = args.ElementAtOrDefault(1);
 
-            var result = await handler.ExecuteAsync(new UploadFromPathArguments
-            {
-                FilePath = filePath,
-                FileName = Path.GetFileName(filePath),
-                DestinationInCollection = destinationFolder
-            });
+                    var result = await handler.ExecuteAsync(new UploadFromPathArguments
+                    {
+                        FilePath = filePath,
+                        FileName = Path.GetFileName(filePath),
+                        DestinationInCollection = destinationFolder
+                    });
 
-            return await result.MapAsync(async _ => Unit.Value);
-        }
+                    return await result.MapAsync(async _ => Unit.Value);
+                });
 
-        private async Task<Option<Unit, Error>> UploadFromUrl(string[] args)
-        {
-            var handler = new UploadFromUrlCommandHandler(_trackExtractor, _musicCollection);
+        private Task<Option<Unit, Error>> UploadFromUrl(string[] args) =>
+            _musicCollectionFactory
+                .GetMusicCollection()
+                .FlatMapAsync(async musicCollection =>
+                {
+                    var handler = new UploadFromUrlCommandHandler(_trackExtractor, musicCollection);
 
-            var url = args.ElementAtOrDefault(0);
-            var destination = args.ElementAtOrDefault(1);
-            var fileName = args.ElementAtOrDefault(2);
+                    var url = args.ElementAtOrDefault(0);
+                    var destination = args.ElementAtOrDefault(1);
+                    var fileName = args.ElementAtOrDefault(2);
 
-            var arguments = new UploadFromUrlArguments
-            {
-                Url = url,
-                DestinationInCollection = destination,
-                CustomFileName = fileName
-            };
+                    var arguments = new UploadFromUrlArguments
+                    {
+                        Url = url,
+                        DestinationInCollection = destination,
+                        CustomFileName = fileName
+                    };
 
-            var result = await handler.ExecuteAsync(arguments);
+                    var result = await handler.ExecuteAsync(arguments);
 
-            return await result.MapAsync(async _ => Unit.Value);
-        }
+                    return await result.MapAsync(async _ => Unit.Value);
+                });
     }
 }
