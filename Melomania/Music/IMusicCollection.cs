@@ -17,12 +17,12 @@ namespace Melomania.Music
         event Action<UploadSuccessResult> OnUploadSuccessfull;
 
         /// <summary>
-        /// Retrieves a list of tracks from a music collection.
+        /// Retrieves a list of entries from a music collection.
         /// </summary>
         /// <param name="pageSize">The page size.</param>
         /// <param name="relativePath">A path relative to the collection root path.</param>
         /// <returns>A collection of music entries.</returns>
-        Task<IEnumerable<MusicCollectionEntry>> GetTracksAsync(int pageSize, string path);
+        Task<Option<IEnumerable<MusicCollectionEntry>, Error>> GetEntriesAsync(int pageSize, string path);
 
         /// <summary>
         /// Uploads a track to your music collection.

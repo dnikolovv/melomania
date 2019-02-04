@@ -31,32 +31,26 @@ namespace Melomania.Cloud.GoogleDrive
         public event Action<UploadSuccessResult> OnUploadSuccessfull;
 
         /// <summary>
-        /// Retrieves a list of files in a given path. Implicitly filters for unexisting files.
+        /// Retrieves a list of files in a given path. Implicitly filters for deleted files.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="pageSize">The maximum page size.</param>
         /// <returns>A list of files.</returns>
-        public async Task<IList<File>> GetFilesAsync(string path, int pageSize = 100)
-        {
-            var listRequest = _driveService.Files.List();
+        public Task<Option<IList<File>, Error>> GetFilesAsync(string path, int pageSize = 100) =>
+            path.SomeNotNull<string, Error>("You must provide a non-null path.")
+                .FlatMapAsync(_ => GetFolderIdFromPathAsync(path))
+                .MapAsync(async parentFolderId =>
+                {
+                    var listRequest = _driveService.Files.List();
 
-            listRequest.PageSize = pageSize;
-            listRequest.Fields = "nextPageToken, files(fileExtension,id,name,size,webContentLink,webViewLink,mimeType,parents,properties,videoMediaMetadata,appProperties,trashed,explicitlyTrashed)";
-            listRequest.Q = "trashed = false";
+                    listRequest.PageSize = pageSize;
+                    listRequest.Fields = "nextPageToken, files(fileExtension,id,name,size,webContentLink,webViewLink,mimeType,parents,properties,videoMediaMetadata,appProperties,trashed,explicitlyTrashed)";
+                    listRequest.Q = $"trashed = false and '{parentFolderId}' in parents";
 
-            if (!string.IsNullOrEmpty(path))
-            {
-                var folderId = await GetFolderIdFromPathAsync(path);
+                    var files = (await listRequest.ExecuteAsync()).Files;
 
-                // TODO: Decide whether to create a new folder if the path doesn't exist or return an error.
-                folderId.MatchSome(id =>
-                    listRequest.Q += $" and '{id}' in parents");
-            }
-
-            var files = (await listRequest.ExecuteAsync()).Files;
-
-            return files;
-        }
+                    return files;
+                });
 
         /// <summary>
         /// Gets the deepest folder in a path's id. (e.g. \Root\Subfolder1\Subfolder2 will return "Subfolder2"'s id).
@@ -65,7 +59,8 @@ namespace Melomania.Cloud.GoogleDrive
         /// <returns>The deepest folder in the path's id or an error.</returns>
         public Task<Option<string, Error>> GetFolderIdFromPathAsync(string folderPath) =>
             SplitPath(folderPath).FlatMapAsync(folderHierarchy =>
-            ExtractDeepestFolderId(folderHierarchy));
+            ExtractDeepestFolderId(folderHierarchy)).
+            MapExceptionAsync(error => Error.MergeErrors(error, $"Searched path: '{folderPath}'."));
 
         /// <summary>
         /// Uploads a file to a given path.
@@ -143,9 +138,9 @@ namespace Melomania.Cloud.GoogleDrive
                                for (int i = 0; i < folders.Length; i++)
                                {
                                    var currentFolderName = folders[i];
-                                   var parentIds = alreadyFetchedFolderIds.Take(i);
+                                   var parentId = alreadyFetchedFolderIds.Take(i).LastOrDefault();
 
-                                   var currentFolderIdResult = await GetFolderIdAsync(currentFolderName, parentIds);
+                                   var currentFolderIdResult = await GetFolderIdAsync(currentFolderName, parentId);
 
                                    // TODO: This is one ugly function :)
                                    if (!currentFolderIdResult.HasValue)
@@ -166,39 +161,40 @@ namespace Melomania.Cloud.GoogleDrive
         /// </summary>
         /// <param name="parentIds">The parent ids.</param>
         /// <returns>An "in parents" query. (e.g. "'1234123' in parents")</returns>
-        private string GenerateParentsQuery(IEnumerable<string> parentIds)
+        private string GenerateParentsQuery(string parentId)
         {
-            if (parentIds?.Any() == true)
+            if (string.IsNullOrEmpty(parentId))
             {
-                // Wrap each parent in single quotes, as that is how the API expects it.
-                var parentsStrings = parentIds.Select(p => $"'{p.Trim()}'");
-
-                return $"{string.Join(", ", parentsStrings)} in parents";
+                return "'root' in parents";
             }
 
-            return "'root' in parents";
+            // Wrap the parent in single quotes, as that is how the API expects it.
+            var parentString = $"'{parentId.Trim()}'";
+            
+            return $"{parentString} in parents";
         }
 
         /// <summary>
         /// Retrieves a folder id by name.
         /// To make sure that multiple folders in the same drive don't mess things up,
-        /// you are required to provide a list of parent ids.
+        /// you are required to provide a parent id.
         /// If none are provided, the function is implicitly going to check the root folder.
         /// </summary>
         /// <param name="folderName">The folder name.</param>
-        /// <param name="parentIds">A list of parent ids.</param>
+        /// <param name="parentId">The parent id.</param>
         /// <returns>The folder id or an error.</returns>
-        private async Task<Option<string, Error>> GetFolderIdAsync(string folderName, IEnumerable<string> parentIds = null)
+        private async Task<Option<string, Error>> GetFolderIdAsync(string folderName, string parentId)
         {
             try
             {
                 var folderInfoRequest = _driveService.Files.List();
 
-                var parentsQuery = GenerateParentsQuery(parentIds);
+                var parentsQuery = GenerateParentsQuery(parentId);
 
                 folderInfoRequest.Fields = "files(id,name,parents)";
                 folderInfoRequest.Q = $"mimeType = 'application/vnd.google-apps.folder' and " +
-                                      $"name = '{folderName}' and" +
+                                      $"trashed = false and " +
+                                      $"name = '{folderName}' and " +
                                       $"{parentsQuery}";
 
                 var results = (await folderInfoRequest.ExecuteAsync()).Files;

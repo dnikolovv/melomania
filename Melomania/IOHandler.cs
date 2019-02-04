@@ -6,8 +6,10 @@ using Melomania.Extractor;
 using Melomania.IO;
 using Melomania.Music;
 using Melomania.Tools;
+using Melomania.Utils;
 using Optional;
 using Optional.Async;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -52,6 +54,7 @@ namespace Melomania
             new[]
             {
                 "setup",
+                "list {path inside collection ('.' for root)}",
                 "upload path {folder path} {path inside collection ('.' for root)}",
                 "upload url {url} {path inside collectio ('.' for root)} {*optional* custom file name}"
             };
@@ -72,6 +75,9 @@ namespace Melomania
                 case "setup":
                     return await Setup();
 
+                case "list":
+                    return await List(args.Skip(1).ToArray());
+
                 case "upload":
                     return await Upload(args.Skip(1).ToArray());
 
@@ -82,6 +88,50 @@ namespace Melomania
 
         private Option<Unit, Error> CommandNotSupported() =>
             Option.None<Unit, Error>(new string[] { "Supported commands:" }.Concat(SupportedCommands).ToArray());
+
+        private Task<Option<Unit, Error>> List(string[] args)
+        {
+            var path = args.ElementAtOrDefault(0);
+
+            return path
+                .SomeNotNull((Error)"You must provide a valid path (use '.' for root)").FlatMapAsync(_ =>
+                _musicCollectionFactory
+                    .GetMusicCollection()
+                    .FlatMapAsync(async musicCollection =>
+                    {
+                        _logger.WriteLine("Fetching collection contents...");
+
+                        var handler = new ListCommandHandler(musicCollection);
+
+                        var result = await handler.ExecuteAsync(new ListArguments
+                        {
+                            Path = path
+                        });
+
+                        return result.Map(collection =>
+                        {
+                            RenderEntries(collection.Entries);
+                            return Unit.Value;
+                        });
+                    }));
+        }
+
+        private void RenderEntries(IEnumerable<MusicCollectionEntry> entries)
+        {
+            var groupedByTypes = entries
+                .GroupBy(e => e.Type);
+
+            foreach (var group in groupedByTypes)
+            {
+                _logger.WriteLine();
+                _logger.WriteLine($"{group.Key.GetDescription()}:");
+
+                foreach (var entry in group)
+                {
+                    _logger.WriteLine(entry.Name);
+                }
+            }
+        }
 
         private async Task<Option<Unit, Error>> Setup()
         {

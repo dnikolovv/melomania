@@ -60,7 +60,7 @@ namespace Melomania.Extractor
                    // TODO: Shorten
                    // We remove the sequential whitespaces from the video title as youtube-dl often adds unnecessary spacing (probably a bug).
                    var fileName = $"{downloadInfo.Title.RemoveSequentialWhitespaces()}.mp3";
-                   var outputPath = Path.Combine(tempFolder, fileName);
+                   var outputPath = Path.Combine(tempFolder, $"{Guid.NewGuid()}.mp3");
 
                    youtubeDl.Options.FilesystemOptions.Output = outputPath;
                    youtubeDl.VideoUrl = url;

@@ -30,10 +30,13 @@ namespace Melomania
             errors.Aggregate(MergeErrors);
 
         public static implicit operator string(Error error) =>
-                    error.ToString();
+            error.ToString();
 
         public static Error MergeErrors(Error first, Error second) =>
             new Error(first.Messages.Concat(second.Messages));
+
+        public static Error operator +(Error first, Error second) =>
+            MergeErrors(first, second);
 
         public override string ToString() =>
             string.Join($"{Environment.NewLine}", Messages);

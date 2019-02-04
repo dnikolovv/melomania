@@ -18,8 +18,10 @@ namespace Melomania
         {
             Console.CursorVisible = false;
 
-            //args = new[] { "upload", "url", "https://www.youtube.com/watch?v=5N2_eWruhbM", "." };
-            args = new[] { "setup" };
+            //args = new[] { "upload", "url", "https://www.youtube.com/watch?v=P6K-FJBxBdc", ".", "Variacii v 11/16" };
+
+            // TODO: Paths are not handled properly
+            args = new[] { "list", "Disk 1 Stamba/Petar Ralchev 3" };
 
             var logger = new ConsoleLogger();
             var reader = new ConsoleReader();
@@ -40,10 +42,9 @@ namespace Melomania
 
             driveService.OnUploadStarting += info => logger.WriteLine($"Now uploading '{info.FileName}' into '{info.DestinationPath}'...");
             driveService.OnUploadProgressChanged += info => logger.WriteLine($"'{info.FileName}' upload progress: {info.Percentage}%");
-            driveService.OnUploadSuccessfull += info => logger.WriteLine($"Successfully uploaded '{info.FileName}'!");
+            driveService.OnUploadSuccessfull += info => logger.WriteLine($"Successfully uploaded '{info.FileName}' into '{info.Path}'!");
             driveService.OnUploadFailure += info => logger.WriteLine($"Failed to upload '{info.FileName}' :(");
-
-            // TODO: Implement a command for listing the collection's contents
+            
             // TODO: Implement a command to redownload the tools if for some reason they became corrupted
 
             var ioHandler = new IOHandler(

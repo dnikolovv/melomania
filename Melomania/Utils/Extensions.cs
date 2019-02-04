@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Optional;
+using System;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Melomania.Utils
 {
@@ -49,6 +51,11 @@ namespace Melomania.Utils
         /// <param name="extension">The new extension.</param>
         /// <returns></returns>
         public static string SetExtension(this string fileName, string extension) =>
-            $"{Path.GetFileNameWithoutExtension(fileName)}.{extension.TrimStart('.')}";
+            Path.ChangeExtension(fileName, extension);
+
+        public static async Task<Option<T, TExceptionResult>> MapExceptionAsync<T, TException, TExceptionResult>(
+            this Task<Option<T, TException>> optionTask,
+            Func<TException, TExceptionResult> mapping) =>
+            (await optionTask).MapException(mapping);
     }
 }

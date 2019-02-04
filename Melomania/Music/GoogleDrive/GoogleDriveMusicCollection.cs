@@ -54,7 +54,7 @@ namespace Melomania.Music.GoogleDrive
         /// <param name="pageSize">The page size.</param>
         /// <param name="relativePath">A path relative to the collection root path.</param>
         /// <returns>A collection of music entries.</returns>
-        public async Task<IEnumerable<MusicCollectionEntry>> GetTracksAsync(int pageSize = 100, string relativePath = null)
+        public async Task<Option<IEnumerable<MusicCollectionEntry>, Error>> GetEntriesAsync(int pageSize = 100, string relativePath = null)
         {
             var fullPath = GenerateFullPath(relativePath);
 
@@ -62,14 +62,16 @@ namespace Melomania.Music.GoogleDrive
                 .GetFilesAsync(pageSize: pageSize, path: fullPath);
 
             return collectionItems
-                .Select(i => new MusicCollectionEntry
-                {
-                    Name = i.Name,
+                .Map(entries => entries
+                    .Select(i => new MusicCollectionEntry
+                    {
+                        Name = i.Name,
 
-                    Type = i.MimeType == DriveFolderMimeType ?
-                        MusicCollectionEntryType.Folder :
-                        MusicCollectionEntryType.Track
-                });
+                        Type = i.MimeType == DriveFolderMimeType ?
+                            MusicCollectionEntryType.Folder :
+                            MusicCollectionEntryType.Track
+                    }))
+                .MapException(error => error += $"Note that you must provide a path relative to your base collection folder. (currently '{_baseCollectionFolder}')");
         }
 
         /// <summary>
