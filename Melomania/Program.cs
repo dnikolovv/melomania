@@ -19,9 +19,8 @@ namespace Melomania
             Console.CursorVisible = false;
 
             //args = new[] { "upload", "url", "https://www.youtube.com/watch?v=P6K-FJBxBdc", ".", "Variacii v 11/16" };
-
-            // TODO: Paths are not handled properly
-            args = new[] { "list", "Disk 1 Stamba/Petar Ralchev 3" };
+            
+            args = new[] { "download-tools" };
 
             var logger = new ConsoleLogger();
             var reader = new ConsoleReader();
@@ -44,8 +43,6 @@ namespace Melomania
             driveService.OnUploadProgressChanged += info => logger.WriteLine($"'{info.FileName}' upload progress: {info.Percentage}%");
             driveService.OnUploadSuccessfull += info => logger.WriteLine($"Successfully uploaded '{info.FileName}' into '{info.Path}'!");
             driveService.OnUploadFailure += info => logger.WriteLine($"Failed to upload '{info.FileName}' :(");
-            
-            // TODO: Implement a command to redownload the tools if for some reason they became corrupted
 
             var ioHandler = new IOHandler(
                 logger,
@@ -56,7 +53,7 @@ namespace Melomania
                 driveService,
                 configuration);
 
-            var executionResult = ioHandler.CheckWhetherToolsAreDownloaded(Configuration.ToolsFolder).FlatMapAsync(_ =>
+            var executionResult = ioHandler.DownloadTools().FlatMapAsync(_ =>
                                   ioHandler.HandleArguments(args));
 
             (await executionResult).Match(

@@ -14,6 +14,6 @@ namespace Melomania.Tools
 
         event Action<ToolDownloadInfo> OnToolIgnored;
 
-        Task<Option<DownloadToolsResult, Error>> DownloadTools(string destination, bool ignoreIfExisting);
+        Task<Option<Unit, Error>> DownloadTools(string destination, bool ignoreIfExisting);
     }
 }

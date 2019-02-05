@@ -59,9 +59,9 @@ namespace Melomania
                 "upload url {url} {path inside collectio ('.' for root)} {*optional* custom file name}"
             };
 
-        public Task<Option<DownloadToolsResult, Error>> CheckWhetherToolsAreDownloaded(string toolsFolder) =>
+        public Task<Option<Unit, Error>> DownloadTools(bool ignoreIfExisting = true) =>
             _toolsProvider
-                .DownloadTools(toolsFolder, ignoreIfExisting: true);
+                .DownloadTools(Configuration.ToolsFolder, ignoreIfExisting);
 
         public async Task<Option<Unit, Error>> HandleArguments(string[] args)
         {
@@ -74,6 +74,9 @@ namespace Melomania
             {
                 case "setup":
                     return await Setup();
+
+                case "download-tools":
+                    return await DownloadTools(ignoreIfExisting: false);
 
                 case "list":
                     return await List(args.Skip(1).ToArray());
