@@ -18,8 +18,8 @@ namespace Melomania
         {
             Console.CursorVisible = false;
 
-            //args = new[] { "upload", "url", "https://www.youtube.com/watch?v=P6K-FJBxBdc", ".", "Variacii v 11/16" };
-            //args = new[] { "download-tools" };
+            args = new[] { "upload", "url", "https://www.youtube.com/watch?v=oHg5SJYRHA0", ".", "Never gonna give you up"};
+            //args = new[] { "list", "." };
 
             var logger = new ConsoleLogger();
             var reader = new ConsoleReader();
@@ -31,14 +31,14 @@ namespace Melomania
             var driveService = await GetGoogleDriveService();
             var musicCollectionFactory = new GoogleDriveMusicCollectionFactory(driveService, configuration);
 
-            trackExtractor.OnExtractionStarting += info => logger.WriteLine($"Now extracting '{info.Title}'...");
+            trackExtractor.OnExtractionStarting += info => logger.WriteLine($"Extracting '{info.Title}'...");
             trackExtractor.OnExtractionProgressChanged += info => logger.WriteLine($"'{info.Title}' progress: {info.Progress}%");
             trackExtractor.OnExtractionFinished += info => logger.WriteLine($"Successfully extracted '{info.Title}'!");
 
             toolsProvider.OnToolDownloadStarting += tool => logger.WriteLine($"Downloading '{tool.Name}'...");
             toolsProvider.OnToolDownloadCompleted += tool => logger.WriteLine($"Successfully downloaded '{tool.Name}'!");
 
-            driveService.OnUploadStarting += info => logger.WriteLine($"Now uploading '{info.FileName}' into '{info.DestinationPath}'...");
+            driveService.OnUploadStarting += info => logger.WriteLine($"Uploading '{info.FileName}' into '{info.DestinationPath}'...");
             driveService.OnUploadProgressChanged += info => logger.WriteLine($"'{info.FileName}' upload progress: {info.Percentage}%");
             driveService.OnUploadSuccessfull += info => logger.WriteLine($"Successfully uploaded '{info.FileName}' into '{info.Path}'!");
             driveService.OnUploadFailure += info => logger.WriteLine($"Failed to upload '{info.FileName}' :(");
