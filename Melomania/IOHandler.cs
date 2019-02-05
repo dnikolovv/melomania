@@ -53,10 +53,11 @@ namespace Melomania
         public static string[] SupportedCommands =>
             new[]
             {
-                "setup",
-                "list {path inside collection ('.' for root)}",
-                "upload path {folder path} {path inside collection ('.' for root)}",
-                "upload url {url} {path inside collectio ('.' for root)} {*optional* custom file name}"
+                "melomania setup",
+                "melomania download-tools",
+                "melomania list <collection-folder-path> ('.' for root)",
+                "melomania upload path <path> <collection-folder-path> ('.' for root)",
+                "melomania upload url <url> <collection-folder-path> ('.' for root) <[optional-custom-filename]>"
             };
 
         public Task<Option<Unit, Error>> DownloadTools(bool ignoreIfExisting = true) =>
@@ -90,7 +91,7 @@ namespace Melomania
         }
 
         private Option<Unit, Error> CommandNotSupported() =>
-            Option.None<Unit, Error>(new string[] { "Supported commands:" }.Concat(SupportedCommands).ToArray());
+            Option.None<Unit, Error>(new string[] { "Usage:" }.Concat(SupportedCommands).ToArray());
 
         private Task<Option<Unit, Error>> List(string[] args)
         {

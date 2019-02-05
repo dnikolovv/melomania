@@ -19,8 +19,7 @@ namespace Melomania
             Console.CursorVisible = false;
 
             //args = new[] { "upload", "url", "https://www.youtube.com/watch?v=P6K-FJBxBdc", ".", "Variacii v 11/16" };
-            
-            args = new[] { "download-tools" };
+            //args = new[] { "download-tools" };
 
             var logger = new ConsoleLogger();
             var reader = new ConsoleReader();
@@ -67,7 +66,6 @@ namespace Melomania
         /// <returns>A google drive service instance.</returns>
         private static async Task<GoogleDriveService> GetGoogleDriveService()
         {
-            // TODO: Use embedded resources for the credentials
             using (var stream = new FileStream("credentials.json", FileMode.Open, FileAccess.Read))
             {
                 var clientSecrets = GoogleClientSecrets.Load(stream).Secrets;
