@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace Melomania.Cloud.GoogleDrive
 {
     // TODO: This should be abstracted into a service that can handle all types of cloud storage providers e.g. Dropbox
-    public class GoogleDriveService
+    public class GoogleDriveService : ICloudStorageService
     {
         private readonly DriveService _driveService;
 
@@ -36,7 +36,7 @@ namespace Melomania.Cloud.GoogleDrive
         /// <param name="path">The path.</param>
         /// <param name="pageSize">The maximum page size.</param>
         /// <returns>A list of files.</returns>
-        public Task<Option<IList<File>, Error>> GetFilesAsync(string path, int pageSize = 100) =>
+        public Task<Option<List<CloudFile>, Error>> GetFilesAsync(string path, int pageSize = 100) =>
             path.SomeNotNull<string, Error>("You must provide a non-null path.")
                 .FlatMapAsync(_ => GetFolderIdFromPathAsync(path))
                 .MapAsync(async parentFolderId =>
@@ -50,7 +50,11 @@ namespace Melomania.Cloud.GoogleDrive
                     var files = (await listRequest.ExecuteAsync()).Files;
 
                     return files;
-                });
+                })
+                .MapAsync(async files => files.Select(f => new CloudFile
+                {
+                    Name = f.Name
+                }).ToList());
 
         /// <summary>
         /// Gets the deepest folder in a path's id. (e.g. \Root\Subfolder1\Subfolder2 will return "Subfolder2"'s id).
@@ -70,15 +74,14 @@ namespace Melomania.Cloud.GoogleDrive
         /// <param name="fileType">The file content type.</param>
         /// <param name="path">The path to upload the file to.</param>
         /// <returns>Either the uploaded file or an error.</returns>
-        public Task<Option<File, Error>> UploadFile(System.IO.Stream fileContents, string fileName, GoogleDriveFileContentType fileType, string path) =>
+        public Task<Option<CloudFile, Error>> UploadFile(System.IO.Stream fileContents, string fileName, string path) =>
             // TODO: Decide whether to create a new folder if the provided doesn't exist
             GetFolderIdFromPathAsync(path).MapAsync(async parentFolderId =>
             {
                 var fileMetadata = new File()
                 {
                     Name = fileName,
-                    Parents = new[] { parentFolderId },
-                    MimeType = fileType.GetDescription()
+                    Parents = new[] { parentFolderId }
                 };
 
                 var uploadRequest = _driveService
@@ -122,6 +125,10 @@ namespace Melomania.Cloud.GoogleDrive
                 var uploadedFile = uploadRequest.ResponseBody;
 
                 return uploadedFile;
+            })
+            .MapAsync(async f => new CloudFile
+            {
+                Name = f.Name
             });
 
         /// <summary>
@@ -170,7 +177,7 @@ namespace Melomania.Cloud.GoogleDrive
 
             // Wrap the parent in single quotes, as that is how the API expects it.
             var parentString = $"'{parentId.Trim()}'";
-            
+
             return $"{parentString} in parents";
         }
 
@@ -185,31 +192,23 @@ namespace Melomania.Cloud.GoogleDrive
         /// <returns>The folder id or an error.</returns>
         private async Task<Option<string, Error>> GetFolderIdAsync(string folderName, string parentId)
         {
-            try
-            {
-                var folderInfoRequest = _driveService.Files.List();
+            var folderInfoRequest = _driveService.Files.List();
 
-                var parentsQuery = GenerateParentsQuery(parentId);
+            var parentsQuery = GenerateParentsQuery(parentId);
 
-                folderInfoRequest.Fields = "files(id,name,parents)";
-                folderInfoRequest.Q = $"mimeType = 'application/vnd.google-apps.folder' and " +
-                                      $"trashed = false and " +
-                                      $"name = '{folderName}' and " +
-                                      $"{parentsQuery}";
+            folderInfoRequest.Fields = "files(id,name,parents)";
+            folderInfoRequest.Q = $"mimeType = 'application/vnd.google-apps.folder' and " +
+                                  $"trashed = false and " +
+                                  $"name = '{folderName}' and " +
+                                  $"{parentsQuery}";
 
-                var results = (await folderInfoRequest.ExecuteAsync()).Files;
+            var results = (await folderInfoRequest.ExecuteAsync()).Files;
 
-                return results
-                    .Some<IList<File>, Error>()
-                    .Filter(rs => rs?.Count > 0, $"No folder with the name '{folderName}' was found.")
-                    .Filter(rs => rs?.Count == 1, $"Multiple folders with the name '{folderName}' were found when one was expected.")
-                    .Map(rs => rs.Single().Id);
-            }
-            // TODO: Research the exact exception that Google throws when the file is not found.
-            catch (Exception e)
-            {
-                return Option.None<string, Error>($"Could not find folder {folderName}.");
-            }
+            return results
+                .Some<IList<File>, Error>()
+                .Filter(rs => rs?.Count > 0, $"No folder with the name '{folderName}' was found.")
+                .Filter(rs => rs?.Count == 1, $"Multiple folders with the name '{folderName}' were found when one was expected.")
+                .Map(rs => rs.Single().Id);
         }
 
         /// <summary>

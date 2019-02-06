@@ -1,5 +1,6 @@
 ﻿using Melomania.CLI.Arguments;
 using Melomania.CLI.Handlers;
+using Melomania.Cloud;
 using Melomania.Cloud.GoogleDrive;
 using Melomania.Config;
 using Melomania.Extractor;
@@ -20,7 +21,7 @@ namespace Melomania
     {
         private readonly Configuration _configuration;
 
-        private readonly GoogleDriveService _googleDriveService;
+        private readonly ICloudStorageService _cloudStorageService;
 
         private readonly ILogger _logger;
 
@@ -38,7 +39,7 @@ namespace Melomania
             IToolsProvider toolsProvider,
             IMusicCollectionFactory musicCollectionFactory,
             ITrackExtractor trackExtractor,
-            GoogleDriveService googleDriveService,
+            ICloudStorageService cloudStorageService,
             Configuration configuration)
         {
             _logger = logger;
@@ -46,7 +47,7 @@ namespace Melomania
             _toolsProvider = toolsProvider;
             _musicCollectionFactory = musicCollectionFactory;
             _trackExtractor = trackExtractor;
-            _googleDriveService = googleDriveService;
+            _cloudStorageService = cloudStorageService;
             _configuration = configuration;
         }
 
@@ -141,7 +142,7 @@ namespace Melomania
         {
             var handler = new SetupCommandHandler(
                 _configuration,
-                _googleDriveService);
+                _cloudStorageService);
 
             _logger.Write("Enter your root music folder (e.g. 'Music' (paths are still not accepted)): ");
             var rootCollectionFolder = _reader.ReadLine();

@@ -1,6 +1,6 @@
 ﻿using Melomania.CLI.Arguments;
 using Melomania.CLI.Results;
-using Melomania.Cloud.GoogleDrive;
+using Melomania.Cloud;
 using Melomania.Config;
 using Optional;
 using System.Threading.Tasks;
@@ -11,17 +11,17 @@ namespace Melomania.CLI.Handlers
     {
         private readonly Configuration _configuration;
 
-        private readonly GoogleDriveService _googleDriveService;
+        private readonly ICloudStorageService _cloudStorageService;
 
-        public SetupCommandHandler(Configuration configuration, GoogleDriveService googleDriveService)
+        public SetupCommandHandler(Configuration configuration, ICloudStorageService cloudStorageService)
         {
-            _googleDriveService = googleDriveService;
+            _cloudStorageService = cloudStorageService;
             _configuration = configuration;
         }
 
         public async Task<Option<SetupSuccessfulResult, Error>> ExecuteAsync(SetupArguments arguments)
         {
-            var folderIdResult = await _googleDriveService
+            var folderIdResult = await _cloudStorageService
                 .GetFolderIdFromPathAsync(arguments.RootCollectionFolder);
 
             return folderIdResult
