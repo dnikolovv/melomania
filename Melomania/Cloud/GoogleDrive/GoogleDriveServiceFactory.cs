@@ -11,9 +11,9 @@ namespace Melomania.Cloud.GoogleDrive
 {
     public class GoogleDriveServiceFactory
     {
-        public async Task<GoogleDriveService> GetDriveService(ClientSecrets clientSecrets)
+        public async Task<GoogleDriveService> GetDriveService(ClientSecrets clientSecrets, Configuration configuration)
         {
-            var tokenSavePath = Path.Combine(Configuration.RootConfigurationFolder, "google");
+            var tokenSavePath = Path.Combine(configuration.RootConfigurationFolder, "google");
 
             var credentials = await GoogleWebAuthorizationBroker.AuthorizeAsync(
                 clientSecrets,

@@ -12,7 +12,7 @@ namespace Melomania.Config
     {
         private const string RootCollectionFolderKey = "rootCollectionFolder";
 
-        public static string RootConfigurationFolder
+        public string RootConfigurationFolder
         {
             get
             {
@@ -24,9 +24,9 @@ namespace Melomania.Config
             }
         }
 
-        public static string TempFolder => Path.Combine(RootConfigurationFolder, "temp");
-        public static string ToolsFolder => Path.Combine(RootConfigurationFolder, "tools");
-        private static string ConfigFilePath => Path.Combine(RootConfigurationFolder, "config.melomania");
+        private string ConfigFilePath => Path.Combine(RootConfigurationFolder, "config.melomania");
+        public string TempFolder => Path.Combine(RootConfigurationFolder, "temp");
+        public string ToolsFolder => Path.Combine(RootConfigurationFolder, "tools");
 
         public Dictionary<string, string> GetAllValues()
         {

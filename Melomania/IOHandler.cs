@@ -62,7 +62,7 @@ namespace Melomania
 
         public Task<Option<Unit, Error>> DownloadTools(bool ignoreIfExisting = true) =>
             _toolsProvider
-                .DownloadTools(Configuration.ToolsFolder, ignoreIfExisting);
+                .DownloadTools(_configuration.ToolsFolder, ignoreIfExisting);
 
         public async Task<Option<Unit, Error>> HandleArguments(string[] args)
         {

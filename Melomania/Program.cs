@@ -18,17 +18,17 @@ namespace Melomania
         {
             Console.CursorVisible = false;
 
-            args = new[] { "upload", "url", "https://www.youtube.com/watch?v=oHg5SJYRHA0", ".", "Never gonna give you up"};
+            //args = new[] { "upload", "url", "https://www.youtube.com/watch?v=oHg5SJYRHA0", ".", "Never gonna give you up"};
             //args = new[] { "list", "." };
 
             var logger = new ConsoleLogger();
             var reader = new ConsoleReader();
-            var toolsProvider = new YoutubeDlProvider();
-            var trackExtractor = new YoutubeDlTrackExtractor(Configuration.ToolsFolder, Configuration.TempFolder);
             var configuration = new Configuration();
+            var toolsProvider = new YoutubeDlProvider();
+            var trackExtractor = new YoutubeDlTrackExtractor(configuration.ToolsFolder, configuration.TempFolder);
 
             // TODO: Abstract over the google drive service to enable implementing other cloud storage providers
-            var driveService = await GetGoogleDriveService();
+            var driveService = await GetGoogleDriveService(configuration);
             var musicCollectionFactory = new GoogleDriveMusicCollectionFactory(driveService, configuration);
 
             trackExtractor.OnExtractionStarting += info => logger.WriteLine($"Extracting '{info.Title}'...");
@@ -64,14 +64,14 @@ namespace Melomania
         /// Implicitly handles authenticating to Google as their API requires it.
         /// </summary>
         /// <returns>A google drive service instance.</returns>
-        private static async Task<GoogleDriveService> GetGoogleDriveService()
+        private static async Task<GoogleDriveService> GetGoogleDriveService(Configuration configuration)
         {
             using (var stream = new FileStream("credentials.json", FileMode.Open, FileAccess.Read))
             {
                 var clientSecrets = GoogleClientSecrets.Load(stream).Secrets;
 
                 var driveService = await new GoogleDriveServiceFactory()
-                    .GetDriveService(clientSecrets);
+                    .GetDriveService(clientSecrets, configuration);
 
                 return driveService;
             }
