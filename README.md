@@ -4,6 +4,8 @@
 
 > Note: The tool is still under development. If you want to try it out right now, you'll have to generate yourself some [Google Console](https://console.cloud.google.com) credentials and build it yourself. Just download your `credentials.json` file and place it at the root of your project.
 
+![Build status](https://travis-ci.org/dnikolovv/melomania.svg?branch=master)
+
 ### Usage
 
 #### Setup
