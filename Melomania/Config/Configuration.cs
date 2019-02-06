@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 
 namespace Melomania.Config
 {
@@ -12,17 +11,8 @@ namespace Melomania.Config
     {
         private const string RootCollectionFolderKey = "rootCollectionFolder";
 
-        public string RootConfigurationFolder
-        {
-            get
-            {
-                var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-
-                return isWindows ?
-                    $@"{Environment.GetEnvironmentVariable("APPDATA")}\.melomania" :
-                    @"~\.melomania";
-            }
-        }
+        public string RootConfigurationFolder =>
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "melomania");
 
         private string ConfigFilePath => Path.Combine(RootConfigurationFolder, "config.melomania");
         public string TempFolder => Path.Combine(RootConfigurationFolder, "temp");
@@ -30,7 +20,6 @@ namespace Melomania.Config
 
         public Dictionary<string, string> GetAllValues()
         {
-            // TODO: Not handling corrupt file format
             try
             {
                 CheckForConfigFile();
@@ -39,13 +28,17 @@ namespace Melomania.Config
                 var keyValuePairs = File
                     .ReadAllLines(ConfigFilePath)
                     .Select(row => row.Split('='))
-                    .ToDictionary(row => row[0], row => row[1]);
+                    .ToDictionary(row => row.ElementAtOrDefault(0), row => row.ElementAtOrDefault(1));
 
                 return keyValuePairs;
             }
             catch (ArgumentException e)
             {
                 throw new ConfigurationException("Duplicate configuration keys were found.", e);
+            }
+            catch (Exception e)
+            {
+                throw new ConfigurationException("Corrupted configuration file.", e);
             }
         }
 
