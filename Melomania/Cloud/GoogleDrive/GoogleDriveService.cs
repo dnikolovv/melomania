@@ -37,7 +37,7 @@ namespace Melomania.Cloud.GoogleDrive
         /// <param name="pageSize">The maximum page size.</param>
         /// <returns>A list of files.</returns>
         public Task<Option<List<CloudFile>, Error>> GetFilesAsync(string path, int pageSize = 100) =>
-            path.SomeNotNull<string, Error>("You must provide a non-null path.")
+            path.SomeNotNull((Error)"You must provide a non-null path.")
                 .FlatMapAsync(_ => GetFolderIdFromPathAsync(path))
                 .MapAsync(async parentFolderId =>
                 {
@@ -51,10 +51,7 @@ namespace Melomania.Cloud.GoogleDrive
 
                     return files;
                 })
-                .MapAsync(async files => files.Select(f => new CloudFile
-                {
-                    Name = f.Name
-                }).ToList());
+                .MapAsync(async files => files.Select(ToCloudFile).ToList());
 
         /// <summary>
         /// Gets the deepest folder in a path's id. (e.g. \Root\Subfolder1\Subfolder2 will return "Subfolder2"'s id).
@@ -126,10 +123,13 @@ namespace Melomania.Cloud.GoogleDrive
 
                 return uploadedFile;
             })
-            .MapAsync(async f => new CloudFile
-            {
-                Name = f.Name
-            });
+            .MapAsync(async f => ToCloudFile(f));
+
+        private static CloudFile ToCloudFile(File f) => new CloudFile
+        {
+            Name = f.Name,
+            MimeType = f.MimeType
+        };
 
         /// <summary>
         /// Gets the deepest folder in a hierarchy's id. (e.g. ["Root", "Subfolder1", "Subfolder2"] will return "Subfolder2"'s id).

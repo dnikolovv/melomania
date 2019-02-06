@@ -18,7 +18,7 @@ namespace Melomania
         {
             Console.CursorVisible = false;
 
-            //args = new[] { "upload", "url", "https://www.youtube.com/watch?v=oHg5SJYRHA0", ".", "Never gonna give you up"};
+            args = new[] { "upload", "url", "https://www.youtube.com/watch?v=oHg5SJYRHA0", ".", "Never gonna give you up" };
             //args = new[] { "setup", "." };
 
             var logger = new ConsoleLogger();

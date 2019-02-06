@@ -84,7 +84,6 @@ namespace Melomania.Music.GoogleDrive
             _googleDriveService.UploadFile(
                 track.Contents,
                 track.Name,
-                GoogleDriveFileContentType.Audio,
                 GenerateFullPath(relativePath))
             .MapAsync(async file => new MusicCollectionEntry
             {
