@@ -16,6 +16,6 @@ namespace Melomania.Cloud
 
         Task<Option<List<CloudFile>, Error>> GetFilesAsync(string path, int pageSize = 100);
         Task<Option<string, Error>> GetFolderIdFromPathAsync(string folderPath);
-        Task<Option<CloudFile, Error>> UploadFile(Stream fileContents, string fileName, string path);
+        Task<Option<CloudFile, Error>> UploadFile(Stream fileContents, string fileName, string mimeType, string path);
     }
 }

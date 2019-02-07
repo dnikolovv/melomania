@@ -26,8 +26,6 @@ namespace Melomania
             var configuration = new Configuration();
             var toolsProvider = new YoutubeDlProvider();
             var trackExtractor = new YoutubeDlTrackExtractor(configuration.ToolsFolder, configuration.TempFolder);
-
-            // TODO: Abstract over the google drive service to enable implementing other cloud storage providers
             var driveService = await GetGoogleDriveService(configuration);
             var musicCollectionFactory = new GoogleDriveMusicCollectionFactory(driveService, configuration);
 
@@ -39,7 +37,7 @@ namespace Melomania
             toolsProvider.OnToolDownloadCompleted += tool => logger.WriteLine($"Successfully downloaded '{tool.Name}'!");
 
             driveService.OnUploadStarting += info => logger.WriteLine($"Uploading '{info.FileName}' into '{info.DestinationPath}'...");
-            driveService.OnUploadProgressChanged += info => logger.WriteLine($"'{info.FileName}' upload progress: {info.Percentage}%");
+            driveService.OnUploadProgressChanged += info => logger.WriteLine($"'{info.FileName}' upload progress: {info.Percentage:F1}%");
             driveService.OnUploadSuccessfull += info => logger.WriteLine($"Successfully uploaded '{info.FileName}' into '{info.Path}'!");
             driveService.OnUploadFailure += info => logger.WriteLine($"Failed to upload '{info.FileName}' :(");
 

@@ -71,14 +71,15 @@ namespace Melomania.Cloud.GoogleDrive
         /// <param name="fileType">The file content type.</param>
         /// <param name="path">The path to upload the file to.</param>
         /// <returns>Either the uploaded file or an error.</returns>
-        public Task<Option<CloudFile, Error>> UploadFile(System.IO.Stream fileContents, string fileName, string path) =>
+        public Task<Option<CloudFile, Error>> UploadFile(System.IO.Stream fileContents, string fileName, string mimeType, string path) =>
             // TODO: Decide whether to create a new folder if the provided doesn't exist
             GetFolderIdFromPathAsync(path).MapAsync(async parentFolderId =>
             {
                 var fileMetadata = new File()
                 {
                     Name = fileName,
-                    Parents = new[] { parentFolderId }
+                    Parents = new[] { parentFolderId },
+                    MimeType = mimeType
                 };
 
                 var uploadRequest = _driveService

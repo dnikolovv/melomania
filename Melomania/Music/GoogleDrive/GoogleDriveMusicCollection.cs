@@ -1,5 +1,6 @@
 ﻿using Melomania.Cloud.GoogleDrive;
 using Melomania.Cloud.Results;
+using Melomania.Utils;
 using Optional;
 using Optional.Async;
 using System;
@@ -84,6 +85,7 @@ namespace Melomania.Music.GoogleDrive
             _googleDriveService.UploadFile(
                 track.Contents,
                 track.Name,
+                GoogleDriveMimeType.Audio.GetDescription(),
                 GenerateFullPath(relativePath))
             .MapAsync(async file => new MusicCollectionEntry
             {
