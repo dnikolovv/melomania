@@ -6,11 +6,15 @@
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>x86</PlatformTarget>
+    <DocumentationFile></DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Google.Apis.Drive.v3" Version="1.37.0.1466" />
     <PackageReference Include="NYoutubeDL" Version="0.10.1" />
-    <PackageReference Include="Optional" Version="4.0.0" />
-    <PackageReference Include="Optional.Async" Version="1.1.0" />
+    <PackageReference Include="Optional" Version="5.0.0-alpha" />
   </ItemGroup>
 
   <ItemGroup>
