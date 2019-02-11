@@ -53,9 +53,8 @@ namespace Melomania
             var executionResult = ioHandler.DownloadTools().FlatMapAsync(_ =>
                                   ioHandler.HandleArguments(args));
 
-            (await executionResult).Match(
-                some: _ => Console.Write(string.Empty),
-                none: error => Console.WriteLine(error));
+            (await executionResult).MatchNone(
+                error => Console.WriteLine(error));
         }
 
         /// <summary>
