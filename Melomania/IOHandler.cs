@@ -10,6 +10,7 @@ using Melomania.Tools;
 using Melomania.Utils;
 using Optional;
 using Optional.Async;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -214,9 +215,15 @@ namespace Melomania
                         CustomFileName = fileName
                     };
 
-                    var result = await handler.ExecuteAsync(arguments);
-
-                    return await result.MapAsync(async _ => Unit.Value);
+                    try
+                    {
+                        var result = await handler.ExecuteAsync(arguments);
+                        return await result.MapAsync(async _ => Unit.Value);
+                    }
+                    catch (Exception e)
+                    {
+                        throw;
+                    }
                 });
     }
 }

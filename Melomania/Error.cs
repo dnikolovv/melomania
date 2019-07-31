@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Melomania
 {
-    public struct Error
+    public readonly struct Error
     {
         public Error(IEnumerable<string> messages)
             : this(messages?.ToArray())

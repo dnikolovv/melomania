@@ -5,6 +5,7 @@ using NYoutubeDL.Models;
 using Optional;
 using Optional.Async;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -108,11 +109,13 @@ namespace Melomania.Extractor
 
         private Option<YoutubeDL, Error> GetYoutubeDl(string toolsPath, string ffmpegPath, string outputPath) =>
             toolsPath
-                .SomeWhen<string, Error>(f => !string.IsNullOrEmpty(f), "Invalid tools folder.")
+                .SomeWhen(f => !string.IsNullOrEmpty(f), (Error)"Invalid tools folder.")
                 .Map(f => Path.Combine(toolsPath, "youtube-dl.exe"))
                 .Filter(youtubeDlPath => File.Exists(youtubeDlPath), $"youtube-dl.exe not found inside {toolsPath}")
                 .Map(youtubeDlPath =>
                 {
+                    UpdateYoutubeDl(youtubeDlPath);
+
                     var youtubeDl = new YoutubeDL(youtubeDlPath);
 
                     youtubeDl.Options.FilesystemOptions.Output = outputPath;
@@ -122,5 +125,13 @@ namespace Melomania.Extractor
 
                     return youtubeDl;
                 });
+
+        private static void UpdateYoutubeDl(string youtubeDlPath)
+        {
+            using (var process = Process.Start(youtubeDlPath, "-U"))
+            {
+                process.WaitForExit();
+            }
+        }
     }
 }

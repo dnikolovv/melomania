@@ -138,31 +138,32 @@ namespace Melomania.Cloud.GoogleDrive
         /// <param name="folderHierarchy">The folder hierarchy.</param>
         /// <returns>The deepest folder's id.</returns>
         private Task<Option<string, Error>> ExtractDeepestFolderId(string[] folderHierarchy) =>
-            folderHierarchy.SomeWhen<string[], Error>(x => x?.Length > 0, "The folder hierarchy must be at least one level deep.")
-                           .FlatMapAsync(async folders =>
-                           {
-                               var alreadyFetchedFolderIds = new List<string>(folderHierarchy.Length);
+            folderHierarchy
+                .SomeWhen<string[], Error>(x => x?.Length > 0, "The folder hierarchy must be at least one level deep.")
+                .FlatMapAsync(async folders =>
+                {
+                    var alreadyFetchedFolderIds = new List<string>(folderHierarchy.Length);
 
-                               for (int i = 0; i < folders.Length; i++)
-                               {
-                                   var currentFolderName = folders[i];
-                                   var parentId = alreadyFetchedFolderIds.Take(i).LastOrDefault();
+                    for (int i = 0; i < folders.Length; i++)
+                    {
+                        var currentFolderName = folders[i];
+                        var parentId = alreadyFetchedFolderIds.Take(i).LastOrDefault();
 
-                                   var currentFolderIdResult = await GetFolderIdAsync(currentFolderName, parentId);
+                        var currentFolderIdResult = await GetFolderIdAsync(currentFolderName, parentId);
 
-                                   // TODO: This is one ugly function :)
-                                   if (!currentFolderIdResult.HasValue)
-                                   {
-                                       return currentFolderIdResult;
-                                   }
+                        // TODO: This is one ugly function :)
+                        if (!currentFolderIdResult.HasValue)
+                        {
+                            return currentFolderIdResult;
+                        }
 
-                                   currentFolderIdResult.MatchSome(id => alreadyFetchedFolderIds.Add(id));
-                               };
+                        currentFolderIdResult.MatchSome(id => alreadyFetchedFolderIds.Add(id));
+                    };
 
-                               return alreadyFetchedFolderIds
-                                   .Last()
-                                   .Some<string, Error>();
-                           });
+                    return alreadyFetchedFolderIds
+                        .Last()
+                        .Some<string, Error>();
+                });
 
         /// <summary>
         /// Generates an "in parents" query. If no parent ids were supplied, the function is implicitly going to generate a "'root' in parents" query.
